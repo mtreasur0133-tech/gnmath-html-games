@@ -139,6 +139,14 @@
             Enable Panic Keybind (Ctrl + 0)
         </label>
 
+        <h3 style="margin-top:18px;">Game Loading</h3>
+        <button id="loadZipBtn" class="btn" style="width:100%;">Load ZIP Game</button>
+        <input type="file" id="zipInput" accept=".zip" style="display:none;">
+
+        <p style="font-size:12px; color:#f88; margin-top:6px;">
+            ZIP loading only works in about:blank mode
+        </p>
+
         <p style="font-size:12px;color:#aaa;margin-top:10px;">
             (Settings reset on reload — data‑URL limitation)
         </p>
@@ -157,7 +165,7 @@
 </div>
 
 <h1>Game Loader Pro — Data URL Edition</h1>
-<p>Loads single‑file HTML games. External assets are not supported in data URLs.</p>
+<p>Loads single‑file HTML games, or ZIP‑packed games when running in about:blank.</p>
 
 <input type="file" id="fileInput" accept=".html">
 <button class="btn" id="fullscreenBtn" disabled>Fullscreen</button>
@@ -167,6 +175,9 @@
     <iframe id="frame"></iframe>
     <div id="overlay">Load a game to begin</div>
 </div>
+
+<!-- JSZip via CDN (for about:blank mode) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
 <script>
 /* CORE ELEMENTS */
@@ -186,9 +197,13 @@ const themeSelect = document.getElementById("themeSelect");
 const openLoaderTabBtn = document.getElementById("openLoaderTabBtn");
 const panicToggle = document.getElementById("panicToggle");
 
+/* ZIP UI ELEMENTS */
+const loadZipBtn = document.getElementById("loadZipBtn");
+const zipInput = document.getElementById("zipInput");
+
 let panicEnabled = false;
 
-/* LOAD GAME */
+/* LOAD GAME (single-file HTML) */
 function loadGame(htmlText) {
     if (currentBlobURL) URL.revokeObjectURL(currentBlobURL);
 
@@ -205,7 +220,7 @@ function loadGame(htmlText) {
     }, 100);
 }
 
-/* FILE INPUT */
+/* FILE INPUT (single HTML) */
 fileInput.addEventListener("change", e => {
     const file = e.target.files[0];
     if (!file) return;
@@ -215,7 +230,7 @@ fileInput.addEventListener("change", e => {
     reader.readAsText(file);
 });
 
-/* DRAG & DROP */
+/* DRAG & DROP (single HTML) */
 document.addEventListener("dragover", e => e.preventDefault());
 document.addEventListener("drop", e => {
     e.preventDefault();
@@ -227,17 +242,20 @@ document.addEventListener("drop", e => {
     reader.readAsText(file);
 });
 
-/* FULLSCREEN */
+/* FULLSCREEN (container) */
 fullscreenBtn.addEventListener("click", () => {
     const container = document.getElementById("gameContainer");
     if (container.requestFullscreen) container.requestFullscreen();
 });
 
-/* NEW TAB FULLSCREEN GAME LAUNCH */
+/* NEW TAB FULLSCREEN GAME LAUNCH (single-file or ZIP) */
 launchTabBtn.addEventListener("click", () => {
-    if (!currentBlobURL) return;
+    // Prefer ZIP main HTML if present, else fall back to currentBlobURL
+    const targetUrl = zipMainHtmlBlobUrl || currentBlobURL;
+    if (!targetUrl) return;
 
     const newTab = window.open("about:blank");
+    if (!newTab) return;
 
     newTab.document.write(`
         <style>
@@ -254,7 +272,7 @@ launchTabBtn.addEventListener("click", () => {
             }
         </style>
 
-        <iframe src="${currentBlobURL}" allow="fullscreen; autoplay; gamepad; keyboard-lock; pointer-lock"></iframe>
+        <iframe src="${targetUrl}" allow="fullscreen; autoplay; gamepad; keyboard-lock; pointer-lock"></iframe>
 
         <script>
             const frame = document.querySelector("iframe");
@@ -312,6 +330,203 @@ openLoaderTabBtn.addEventListener("click", () => {
     newTab.document.open();
     newTab.document.write(html);
     newTab.document.close();
+});
+
+/* ===========================
+   ZIP Virtual Filesystem Core
+   =========================== */
+
+let zipVirtualFS = {};      // path -> blob URL
+let zipMainHtmlBlobUrl = null;
+
+/**
+ * Load a ZIP File object, extract it, and prepare a Blob URL
+ * for the main HTML file with all asset paths rewritten.
+ * Returns a Promise<string> (Blob URL of rewritten HTML).
+ */
+async function loadZipGameFromFile(file) {
+    if (!window.JSZip) {
+        alert("JSZip is not available. ZIP loading only works in about:blank with network access.");
+        throw new Error("JSZip not loaded");
+    }
+
+    const arrayBuffer = await file.arrayBuffer();
+    const zip = await JSZip.loadAsync(arrayBuffer);
+
+    // 1) Build a list of all files with metadata
+    const fileEntries = [];
+    zip.forEach((relativePath, zipEntry) => {
+        if (!zipEntry.dir) {
+            fileEntries.push({
+                path: relativePath,
+                entry: zipEntry
+            });
+        }
+    });
+
+    if (fileEntries.length === 0) {
+        throw new Error("ZIP is empty or contains only folders.");
+    }
+
+    // 2) Find all HTML files and pick the largest one
+    const htmlEntries = [];
+    for (const f of fileEntries) {
+        if (f.path.toLowerCase().endsWith(".html")) {
+            const content = await f.entry.async("string");
+            htmlEntries.push({
+                path: f.path,
+                content,
+                size: content.length
+            });
+        }
+    }
+
+    if (htmlEntries.length === 0) {
+        throw new Error("No HTML files found in ZIP.");
+    }
+
+    // Pick the largest HTML file
+    htmlEntries.sort((a, b) => b.size - a.size);
+    const mainHtml = htmlEntries[0];
+
+    // 3) Build virtual filesystem: create Blob URLs for all non-HTML assets
+    zipVirtualFS = {};
+    for (const f of fileEntries) {
+        const lower = f.path.toLowerCase();
+        if (lower.endsWith(".html")) continue; // handled separately
+
+        const blob = await f.entry.async("blob");
+        const blobUrl = URL.createObjectURL(blob);
+        zipVirtualFS[normalizeZipPath(f.path)] = blobUrl;
+    }
+
+    // 4) Rewrite asset paths inside the main HTML
+    const rewrittenHtml = rewriteHtmlAssetPaths(mainHtml.content, mainHtml.path);
+
+    // 5) Create a Blob URL for the rewritten HTML
+    const htmlBlob = new Blob([rewrittenHtml], { type: "text/html" });
+    zipMainHtmlBlobUrl = URL.createObjectURL(htmlBlob);
+    currentBlobURL = zipMainHtmlBlobUrl; // keep in sync with existing flow
+    return zipMainHtmlBlobUrl;
+}
+
+/* ===========================
+   Path Utilities
+   =========================== */
+
+function normalizeZipPath(path) {
+    return path.replace(/\\/g, "/").replace(/^\.\/+/, "");
+}
+
+function resolveRelativePath(basePath, relativePath) {
+    basePath = normalizeZipPath(basePath);
+    relativePath = normalizeZipPath(relativePath);
+
+    const lastSlash = basePath.lastIndexOf("/");
+    let baseDir = lastSlash === -1 ? "" : basePath.slice(0, lastSlash + 1);
+
+    if (relativePath.startsWith("/")) {
+        return relativePath.slice(1);
+    }
+
+    const stack = baseDir.split("/").filter(Boolean);
+
+    for (const part of relativePath.split("/")) {
+        if (part === "." || part === "") continue;
+        if (part === "..") {
+            stack.pop();
+        } else {
+            stack.push(part);
+        }
+    }
+
+    return stack.join("/");
+}
+
+/* ===========================
+   HTML Rewriting
+   =========================== */
+
+function rewriteHtmlAssetPaths(htmlText, htmlPath) {
+    // 1) Rewrite src/href attributes
+    htmlText = htmlText.replace(
+        /(src|href)\s*=\s*("([^"]+)"|'([^']+)'|([^>\s"']+))/gi,
+        (match, attr, fullValue, dq, sq, bare) => {
+            const original = dq || sq || bare || "";
+            const trimmed = original.trim();
+
+            if (!trimmed || isDataOrHttpUrl(trimmed) || trimmed.startsWith("#")) {
+                return match;
+            }
+
+            const resolved = resolveRelativePath(htmlPath, trimmed);
+            const blobUrl = zipVirtualFS[resolved];
+            if (!blobUrl) {
+                return match;
+            }
+
+            const quote = dq ? "\"" : sq ? "'" : "\"";
+            return `${attr}=${quote}${blobUrl}${quote}`;
+        }
+    );
+
+    // 2) Rewrite CSS url(...)
+    htmlText = htmlText.replace(
+        /url\(\s*(['"]?)([^'")]+)\1\s*\)/gi,
+        (match, quote, urlPath) => {
+            const trimmed = urlPath.trim();
+            if (!trimmed || isDataOrHttpUrl(trimmed) || trimmed.startsWith("#")) {
+                return match;
+            }
+
+            const resolved = resolveRelativePath(htmlPath, trimmed);
+            const blobUrl = zipVirtualFS[resolved];
+            if (!blobUrl) {
+                return match;
+            }
+
+            return `url("${blobUrl}")`;
+        }
+    );
+
+    return htmlText;
+}
+
+function isDataOrHttpUrl(u) {
+    return /^(data:|https?:|blob:)/i.test(u);
+}
+
+/* ===========================
+   ZIP Loader Integration
+   =========================== */
+
+loadZipBtn.addEventListener("click", () => {
+    zipInput.value = "";
+    zipInput.click();
+});
+
+zipInput.addEventListener("change", async () => {
+    const file = zipInput.files[0];
+    if (!file) return;
+
+    overlay.textContent = "Extracting ZIP…";
+    overlay.style.display = "flex";
+
+    try {
+        const blobUrl = await loadZipGameFromFile(file);
+
+        frame.src = blobUrl;
+        fullscreenBtn.disabled = false;
+        launchTabBtn.disabled = false;
+        overlay.style.display = "none";
+    } catch (err) {
+        console.error(err);
+        overlay.textContent = "Failed to load ZIP";
+        setTimeout(() => {
+            overlay.style.display = "none";
+            overlay.textContent = "Load a game to begin";
+        }, 2000);
+    }
 });
 </script>
 
