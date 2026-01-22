@@ -1,2 +1,2 @@
 These are NOT my games, do not say they are, and please do NOT sue me.
-Also, I recommend using my HTML file launcher, but it's not required. Also, if your school blocks JavaScript in file URLs, encode the HTML into a data URL using urlencoder.org. Once you have your encoded text, go to a new tab and type data:text/html,  and then paste the encoded text into the search bar, and enjoy your launcher.
+Also, I recommend using my HTML file launcher, but it's not required, you can find it in the tools folder. Also, if your school blocks JavaScript in file URLs, encode the HTML into a data URL using urlencoder.org. Once you have your encoded text, go to a new tab and type data:text/html,  and then paste the encoded text into the search bar, and enjoy your launcher.
