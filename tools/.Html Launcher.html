@@ -2,233 +2,673 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Game Loader Pro — Data URL Edition</title>
+<title>Game Loader Pro 2026 — Data URL Edition</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-    body {
-        margin: 0;
-        background: #0d0d0f;
-        color: white;
-        font-family: system-ui, sans-serif;
-        padding: 20px;
-        text-align: center;
-        transition: background 0.3s, color 0.3s;
+    :root {
+        --accent-1: #ff4b81;
+        --accent-2: #7df9ff;
+        --accent-3: #7cff6b;
+        --bg-dark: #050509;
+        --panel-bg: #101018;
+        --text-main: #f5f5f7;
+        --text-muted: #a0a0b5;
+        --border-subtle: #26263a;
+        --radius-lg: 14px;
+        --radius-md: 10px;
+        --radius-sm: 6px;
+        --shadow-soft: 0 18px 40px rgba(0,0,0,0.6);
+        --transition-fast: 0.18s ease-out;
     }
-    h1 { margin-top: 0; }
 
-    /* SETTINGS BUTTON */
+    * {
+        box-sizing: border-box;
+    }
+
+    html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+    }
+
+    body {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: var(--bg-dark);
+        color: var(--text-main);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 18px;
+        transition: background 0.25s ease, color 0.25s ease;
+    }
+
+    h1 {
+        margin: 10px 0 4px;
+        font-size: 22px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    p.subtitle {
+        margin: 0 0 14px;
+        font-size: 13px;
+        color: var(--text-muted);
+    }
+
+    .top-bar {
+        width: 100%;
+        max-width: 980px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .brand-chip {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--text-muted);
+        opacity: 0.9;
+    }
+
     .settings-btn {
-        position: fixed;
-        top: 12px;
-        left: 12px;
-        background: #222;
-        border: 1px solid #444;
-        color: white;
-        padding: 6px 10px;
-        border-radius: 6px;
+        background: rgba(10,10,20,0.9);
+        border-radius: 999px;
+        border: 1px solid rgba(120,120,200,0.5);
+        color: var(--text-main);
+        padding: 6px 12px;
+        font-size: 13px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
         cursor: pointer;
-        z-index: 1000;
+        box-shadow: 0 0 0 1px rgba(0,0,0,0.6);
+        transition: background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+    }
+
+    .settings-btn span.icon {
+        font-size: 15px;
+    }
+
+    .settings-btn:hover {
+        background: radial-gradient(circle at 0% 0%, rgba(255,75,129,0.25), rgba(10,10,20,0.95));
+        transform: translateY(-1px);
+        border-color: rgba(180,180,255,0.8);
+        box-shadow: 0 0 18px rgba(124,255,107,0.25);
+    }
+
+    .settings-btn:active {
+        transform: translateY(0);
+        box-shadow: 0 0 10px rgba(124,255,107,0.15);
+    }
+
+    .controls-row {
+        width: 100%;
+        max-width: 980px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .file-input-label {
+        position: relative;
+        overflow: hidden;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-subtle);
+        background: radial-gradient(circle at 0% 0%, rgba(124,255,107,0.12), rgba(10,10,20,0.95));
+        color: var(--text-main);
+        font-size: 13px;
+        cursor: pointer;
+        box-shadow: var(--shadow-soft);
+        transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast), background var(--transition-fast);
+    }
+
+    .file-input-label:hover {
+        transform: translateY(-1px);
+        border-color: rgba(124,255,107,0.8);
+        box-shadow: 0 20px 45px rgba(0,0,0,0.75);
+        background: radial-gradient(circle at 0% 0%, rgba(124,255,107,0.2), rgba(10,10,20,0.98));
+    }
+
+    .file-input-label span.icon {
         font-size: 16px;
     }
 
-    /* SETTINGS OVERLAY */
-    .settings-overlay {
-        position: fixed;
-        inset: 0;
-        background: rgba(0,0,0,0.65);
+    .file-input-label small {
+        display: block;
+        font-size: 11px;
+        color: var(--text-muted);
+    }
+
+    #fileInput {
         display: none;
-        align-items: center;
-        justify-content: center;
-        z-index: 999;
     }
 
-    .settings-panel {
-        background: #1a1a1d;
-        padding: 20px;
-        border-radius: 10px;
-        width: 260px;
-        position: relative;
-        border: 1px solid #333;
-        box-shadow: 0 0 20px rgba(0,0,0,0.6);
-        animation: popIn 0.2s ease-out;
-    }
-
-    @keyframes popIn {
-        from { transform: scale(0.85); opacity: 0; }
-        to { transform: scale(1); opacity: 1; }
-    }
-
-    .close-btn {
-        position: absolute;
-        top: 8px;
-        right: 8px;
-        background: #333;
-        border: none;
-        color: white;
-        padding: 4px 8px;
-        border-radius: 4px;
+    .btn {
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-subtle);
+        background: linear-gradient(135deg, rgba(255,75,129,0.9), rgba(124,255,107,0.9));
+        color: #050509;
+        font-weight: 600;
+        font-size: 13px;
+        padding: 8px 14px;
         cursor: pointer;
+        box-shadow: 0 14px 30px rgba(0,0,0,0.7);
+        transition: transform var(--transition-fast), box-shadow var(--transition-fast), filter var(--transition-fast), opacity var(--transition-fast), border-color var(--transition-fast);
     }
 
-    /* GAME AREA */
+    .btn.secondary {
+        background: radial-gradient(circle at 0% 0%, rgba(125,249,255,0.18), rgba(10,10,20,0.96));
+        color: var(--text-main);
+        border-color: rgba(120,120,200,0.6);
+    }
+
+    .btn:disabled {
+        opacity: 0.4;
+        cursor: default;
+        box-shadow: none;
+    }
+
+    .btn:not(:disabled):hover {
+        transform: translateY(-1px);
+        box-shadow: 0 18px 40px rgba(0,0,0,0.85);
+        filter: brightness(1.05);
+    }
+
+    .btn:not(:disabled):active {
+        transform: translateY(0);
+        box-shadow: 0 10px 24px rgba(0,0,0,0.7);
+    }
+
+    .controls-row .btn {
+        flex-shrink: 0;
+    }
+
     #gameContainer {
         width: 100%;
-        max-width: 900px;
+        max-width: 980px;
         height: 600px;
-        margin: 20px auto;
-        background: black;
-        border: 2px solid #333;
-        border-radius: 8px;
+        border-radius: var(--radius-lg);
+        background: radial-gradient(circle at 50% 0%, rgba(255,75,129,0.18), rgba(5,5,9,1));
+        border: 1px solid rgba(80,80,140,0.7);
+        box-shadow:
+            0 26px 60px rgba(0,0,0,0.9),
+            0 0 40px rgba(124,255,107,0.18),
+            0 0 40px rgba(125,249,255,0.18);
         overflow: hidden;
         position: relative;
+        display: flex;
+        align-items: stretch;
+        justify-content: stretch;
     }
+
+    #gameContainer::before {
+        content: "";
+        position: absolute;
+        inset: -40px;
+        background:
+            radial-gradient(circle at 0% 100%, rgba(255,75,129,0.18), transparent 55%),
+            radial-gradient(circle at 100% 0%, rgba(125,249,255,0.18), transparent 55%),
+            radial-gradient(circle at 50% 100%, rgba(124,255,107,0.16), transparent 60%);
+        opacity: 0.9;
+        pointer-events: none;
+        z-index: 0;
+    }
+
     iframe {
         width: 100%;
         height: 100%;
         border: none;
         background: black;
+        position: relative;
+        z-index: 1;
     }
+
     #overlay {
         position: absolute;
         inset: 0;
         display: flex;
         align-items: center;
         justify-content: center;
-        background: rgba(0,0,0,0.6);
-        color: #ccc;
+        color: var(--text-muted);
         font-size: 14px;
+        z-index: 2;
         pointer-events: none;
+        text-shadow: 0 0 12px rgba(0,0,0,0.8);
     }
 
-    /* BUTTONS */
-    .btn {
-        background: #ff4b81;
-        border: none;
-        padding: 10px 18px;
-        border-radius: 6px;
-        color: white;
-        font-weight: bold;
+    #overlay span {
+        padding: 8px 14px;
+        border-radius: 999px;
+        border: 1px dashed rgba(160,160,220,0.7);
+        background: rgba(5,5,9,0.85);
+    }
+
+    #loaderUI {
+        position: absolute;
+        inset: 0;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(circle at 50% 0%, rgba(0,0,0,0.2), rgba(0,0,0,0.85));
+        color: #fff;
+        font-size: 14px;
+        z-index: 3;
+    }
+
+    .spinner {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        border: 4px solid rgba(120,120,160,0.7);
+        border-top-color: var(--accent-1);
+        border-right-color: var(--accent-2);
+        border-bottom-color: var(--accent-3);
+        animation: spin 0.8s linear infinite;
+        margin-bottom: 16px;
+        box-shadow: 0 0 18px rgba(0,0,0,0.8);
+    }
+
+    #zipProgressContainer {
+        width: 70%;
+        background: rgba(10,10,20,0.9);
+        border-radius: 999px;
+        overflow: hidden;
+        border: 1px solid rgba(120,120,200,0.7);
+        box-shadow: 0 0 18px rgba(0,0,0,0.8);
+    }
+
+    #zipProgressBar {
+        height: 10px;
+        width: 0%;
+        background: linear-gradient(90deg, var(--accent-1), var(--accent-2), var(--accent-3));
+        transition: width 0.15s ease-out;
+    }
+
+    #loaderText {
+        margin-top: 10px;
+        font-size: 13px;
+        color: var(--text-main);
+    }
+
+    .credits {
+        width: 100%;
+        max-width: 980px;
+        margin-top: 10px;
+        font-size: 11px;
+        color: var(--text-muted);
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .credits span strong {
+        color: var(--accent-1);
+    }
+
+    .credits span.ai strong {
+        color: var(--accent-2);
+    }
+
+    .credits span.tag {
+        opacity: 0.8;
+    }
+
+    .settings-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.7);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 999;
+        backdrop-filter: blur(8px);
+    }
+
+    .settings-panel {
+        width: 280px;
+        background: rgba(10,10,20,0.98);
+        border-radius: var(--radius-lg);
+        border: 1px solid rgba(120,120,200,0.7);
+        box-shadow: 0 26px 60px rgba(0,0,0,0.9);
+        padding: 16px 16px 14px;
+        position: relative;
+        color: var(--text-main);
+    }
+
+    .settings-panel h2 {
+        margin: 0 0 4px;
+        font-size: 16px;
+    }
+
+    .settings-panel p.sub {
+        margin: 0 0 10px;
+        font-size: 11px;
+        color: var(--text-muted);
+    }
+
+    .settings-panel label {
+        display: block;
+        font-size: 12px;
+        margin-top: 10px;
+        margin-bottom: 4px;
+    }
+
+    .settings-panel select {
+        width: 100%;
+        padding: 6px 8px;
+        border-radius: var(--radius-sm);
+        border: 1px solid rgba(120,120,200,0.7);
+        background: rgba(5,5,12,0.95);
+        color: var(--text-main);
+        font-size: 12px;
+    }
+
+    .settings-panel .toggle-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 10px;
+        font-size: 12px;
+    }
+
+    .settings-panel .toggle-row input[type="checkbox"] {
+        transform: scale(1.05);
+    }
+
+    .settings-panel .section-title {
+        margin-top: 14px;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--text-muted);
+    }
+
+    .settings-panel .btn {
+        width: 100%;
+        margin-top: 10px;
+        font-size: 12px;
+    }
+
+    .close-btn {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        border-radius: 999px;
+        border: 1px solid rgba(120,120,200,0.7);
+        background: rgba(5,5,12,0.95);
+        color: var(--text-main);
+        font-size: 11px;
+        padding: 2px 7px;
         cursor: pointer;
-        margin: 5px;
     }
 
-    /* SPINNER */
     @keyframes spin {
         from { transform: rotate(0deg); }
         to { transform: rotate(360deg); }
     }
+
+    /* ===========================
+       THEME PACKS
+       =========================== */
+
+    body[data-theme="gamer"] {
+        background: radial-gradient(circle at 0% 0%, #050509, #020207);
+        color: var(--text-main);
+    }
+
+    body[data-theme="gamer"] #gameContainer {
+        background: radial-gradient(circle at 50% 0%, rgba(255,75,129,0.18), rgba(5,5,9,1));
+        box-shadow:
+            0 26px 60px rgba(0,0,0,0.9),
+            0 0 40px rgba(124,255,107,0.18),
+            0 0 40px rgba(125,249,255,0.18);
+    }
+
+    body[data-theme="minimal"] {
+        background: #f3f3f6;
+        color: #111;
+    }
+
+    body[data-theme="minimal"] .settings-panel,
+    body[data-theme="minimal"] #gameContainer {
+        background: #ffffff;
+        border-color: #d0d0dd;
+        box-shadow: 0 18px 40px rgba(0,0,0,0.08);
+    }
+
+    body[data-theme="minimal"] .file-input-label,
+    body[data-theme="minimal"] .btn.secondary {
+        background: #ffffff;
+        border-color: #d0d0dd;
+        color: #111;
+        box-shadow: 0 10px 24px rgba(0,0,0,0.06);
+    }
+
+    body[data-theme="minimal"] .btn {
+        background: #111;
+        color: #f5f5f7;
+        box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+    }
+
+    body[data-theme="minimal"] .credits span strong {
+        color: #111;
+    }
+
+    body[data-theme="minimal"] .credits span.ai strong {
+        color: #444;
+    }
+
+    body[data-theme="neon"] {
+        background: radial-gradient(circle at 0% 0%, #050010, #02000a);
+        color: #fdfdff;
+    }
+
+    body[data-theme="neon"] #gameContainer {
+        background: radial-gradient(circle at 50% 0%, rgba(255,75,129,0.3), rgba(10,0,30,1));
+        border-color: rgba(255,75,129,0.8);
+        box-shadow:
+            0 26px 60px rgba(0,0,0,0.9),
+            0 0 40px rgba(255,75,129,0.4),
+            0 0 40px rgba(125,249,255,0.4);
+    }
+
+    body[data-theme="neon"] .settings-panel {
+        background: rgba(10,0,30,0.98);
+        border-color: rgba(125,249,255,0.8);
+    }
+
+    body[data-theme="neon"] .credits span strong {
+        color: #ff4bff;
+        text-shadow: 0 0 6px rgba(255,75,255,0.8);
+    }
+
+    body[data-theme="neon"] .credits span.ai strong {
+        color: #7df9ff;
+        text-shadow: 0 0 6px rgba(125,249,255,0.8);
+    }
+
+    body[data-theme="glass"] {
+        background: linear-gradient(135deg, #0b1020, #151a2a);
+        color: #f5f5f7;
+    }
+
+    body[data-theme="glass"] #gameContainer,
+    body[data-theme="glass"] .settings-panel {
+        background: rgba(10,10,25,0.7);
+        border-color: rgba(180,180,255,0.7);
+        backdrop-filter: blur(14px);
+        box-shadow: 0 26px 60px rgba(0,0,0,0.9);
+    }
+
+    body[data-theme="glass"] .file-input-label,
+    body[data-theme="glass"] .btn.secondary {
+        background: rgba(15,15,35,0.7);
+        border-color: rgba(180,180,255,0.7);
+    }
+
+    body[data-theme="terminal"] {
+        background: #020503;
+        color: #d0ffd0;
+        font-family: "Fira Code", "Cascadia Code", monospace;
+    }
+
+    body[data-theme="terminal"] #gameContainer,
+    body[data-theme="terminal"] .settings-panel {
+        background: #020503;
+        border-color: #0f3f1a;
+        box-shadow: 0 0 24px rgba(0,255,0,0.2);
+    }
+
+    body[data-theme="terminal"] .file-input-label,
+    body[data-theme="terminal"] .btn.secondary {
+        background: #020503;
+        border-color: #0f3f1a;
+        color: #d0ffd0;
+    }
+
+    body[data-theme="terminal"] .btn {
+        background: #0f3f1a;
+        color: #d0ffd0;
+        border-color: #1f7f3a;
+    }
+
+    body[data-theme="terminal"] .credits span strong,
+    body[data-theme="terminal"] .credits span.ai strong {
+        color: #7cff6b;
+    }
+
+    @media (max-width: 900px) {
+        #gameContainer {
+            height: 420px;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .controls-row {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .controls-row .btn,
+        .file-input-label {
+            width: 100%;
+            justify-content: center;
+        }
+        .credits {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
 </style>
 </head>
+<body data-theme="gamer">
 
-<body>
+<div class="top-bar">
+    <div class="brand-chip">Game Loader Pro 2026</div>
+    <button id="settingsBtn" class="settings-btn">
+        <span class="icon">⚙️</span>
+        <span>Settings</span>
+    </button>
+</div>
 
-<!-- SETTINGS BUTTON -->
-<button id="settingsBtn" class="settings-btn">⚙️</button>
+<h1>Game Loader Pro — Data URL Edition</h1>
+<p class="subtitle">Load single‑file HTML games or ZIP‑packed games with a virtual filesystem.</p>
 
-<!-- SETTINGS OVERLAY -->
+<div class="controls-row">
+    <label class="file-input-label">
+        <span class="icon">📂</span>
+        <div>
+            Load HTML Game
+            <small>Single‑file .html</small>
+        </div>
+        <input type="file" id="fileInput" accept=".html">
+    </label>
+
+    <button class="btn secondary" id="loadZipBtn">Load ZIP Game</button>
+    <input type="file" id="zipInput" accept=".zip" style="display:none;">
+
+    <button class="btn" id="fullscreenBtn" disabled>Fullscreen</button>
+    <button class="btn secondary" id="launchTabBtn" disabled>Open in New Tab</button>
+</div>
+
+<div id="gameContainer">
+    <iframe id="frame"></iframe>
+    <div id="overlay"><span>Load a game to begin</span></div>
+
+    <div id="loaderUI">
+        <div class="spinner"></div>
+        <div id="zipProgressContainer" style="display:none;">
+            <div id="zipProgressBar"></div>
+        </div>
+        <p id="loaderText">Loading…</p>
+    </div>
+</div>
+
+<div class="credits">
+    <span id="creditAuthor">Crafted with intent by <strong>Madoc Treasure</strong></span>
+    <span id="creditAI" class="ai">Built smarter with <strong>Copilot</strong></span>
+    <span id="creditTag" class="tag">Game Loader Pro — Always Evolving</span>
+</div>
+
 <div id="settingsOverlay" class="settings-overlay">
     <div class="settings-panel">
         <button id="closeSettings" class="close-btn">✕</button>
         <h2>Settings</h2>
+        <p class="sub">Tune the launcher to match your vibe.</p>
 
-        <label>Theme:</label>
+        <label for="themeSelect">Theme</label>
         <select id="themeSelect">
-            <option value="dark">Dark</option>
-            <option value="light">Light</option>
-            <option value="neon">Neon</option>
+            <option value="gamer">Hybrid Gamer (RGB Underlight)</option>
+            <option value="minimal">Sleek Minimalist</option>
+            <option value="neon">Neon Cyber</option>
+            <option value="glass">Glass / Frosted</option>
+            <option value="terminal">Retro Terminal</option>
         </select>
 
-        <label style="display:flex;align-items:center;gap:6px;margin-top:12px;">
+        <div class="toggle-row">
             <input type="checkbox" id="panicToggle">
-            Enable Panic Keybind (Ctrl + 0)
-        </label>
-
-        <h3 style="margin-top:18px;">Game Loading</h3>
-
-        <button id="loadZipBtn" class="btn" style="width:100%;">Load ZIP Game</button>
-        <input type="file" id="zipInput" accept=".zip" style="display:none;">
-
-        <p style="font-size:12px; color:#f88; margin-top:6px;">
-            ZIP loading only works in about:blank mode
-        </p>
-
-        <p style="font-size:12px;color:#aaa;margin-top:10px;">
-            (Settings reset on reload — data‑URL limitation)
-        </p>
-
-        <hr style="margin:16px 0; border: none; border-top: 1px solid #444;">
-
-        <div style="font-size:12px; color:#aaa; text-align:center;">
-            <p>Creator: <strong>Madoc Treasure</strong></p>
-            <p>Credit to <strong>Copilot</strong></p>
+            <span>Enable Panic Keybind (Ctrl + 0)</span>
         </div>
 
-        <button id="openLoaderTabBtn" class="btn" style="width:100%; margin-top:15px;">
-            Open Loader in New Tab
-        </button>
+        <div class="section-title">Game Loading</div>
+        <button id="openLoaderTabBtn" class="btn secondary">Open Loader in New Tab</button>
+        <p style="margin:6px 0 0;font-size:11px;color:var(--text-muted);">
+            ZIP loading only works in about:blank mode.
+        </p>
     </div>
 </div>
 
-<h1>Game Loader Pro — Data URL Edition</h1>
-<p>Loads single‑file HTML games or ZIP‑packed games (about:blank only).</p>
-
-<input type="file" id="fileInput" accept=".html">
-<button class="btn" id="fullscreenBtn" disabled>Fullscreen</button>
-<button class="btn" id="launchTabBtn" disabled>Open in New Tab</button>
-
-<div id="gameContainer">
-    <iframe id="frame"></iframe>
-    <div id="overlay">Load a game to begin</div>
-
-    <!-- LOADING UI -->
-    <div id="loaderUI" style="
-        position:absolute;
-        inset:0;
-        display:none;
-        flex-direction:column;
-        align-items:center;
-        justify-content:center;
-        background:rgba(0,0,0,0.6);
-        color:white;
-        font-size:14px;
-        z-index:10;
-    ">
-        <div class="spinner" style="
-            width:40px;
-            height:40px;
-            border:4px solid #555;
-            border-top-color:#ff4b81;
-            border-radius:50%;
-            animation:spin 0.8s linear infinite;
-            margin-bottom:15px;
-        "></div>
-
-        <div id="zipProgressContainer" style="width:70%; background:#222; border-radius:6px; overflow:hidden; display:none;">
-            <div id="zipProgressBar" style="height:10px; width:0%; background:#ff4b81;"></div>
-        </div>
-
-        <p id="loaderText" style="margin-top:10px;">Loading…</p>
-    </div>
-</div>
-
-<!-- JSZip CDN -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-
 <script>
-/* ===========================
-   CORE ELEMENTS
-   =========================== */
+/************************************************************
+ *  Game Loader Pro — Engine Metadata (Signature Block)
+ *  Original Creator: Madoc Treasure
+ *  Engine Collaboration: Copilot
+ *  Fingerprint: MTP-GLP-CORE-7F92A1
+ *  This metadata is part of the engine structure.
+ ************************************************************/
 
+/* CORE ELEMENTS */
 const fileInput = document.getElementById("fileInput");
 const frame = document.getElementById("frame");
 const overlay = document.getElementById("overlay");
 const fullscreenBtn = document.getElementById("fullscreenBtn");
 const launchTabBtn = document.getElementById("launchTabBtn");
+const loaderUI = document.getElementById("loaderUI");
+const loaderText = document.getElementById("loaderText");
+const zipProgressContainer = document.getElementById("zipProgressContainer");
+const zipProgressBar = document.getElementById("zipProgressBar");
 
-let currentBlobURL = null;
-
-/* SETTINGS */
 const settingsBtn = document.getElementById("settingsBtn");
 const settingsOverlay = document.getElementById("settingsOverlay");
 const closeSettings = document.getElementById("closeSettings");
@@ -236,18 +676,15 @@ const themeSelect = document.getElementById("themeSelect");
 const openLoaderTabBtn = document.getElementById("openLoaderTabBtn");
 const panicToggle = document.getElementById("panicToggle");
 
-/* ZIP UI */
-const loadZipBtn = document.getElementById("loadZipBtn");
-const zipInput = document.getElementById("zipInput");
+let currentBlobURL = null;
+let zipVirtualFS = {};
+let zipMainHtmlBlobUrl = null;
+let loadTimeout = null;
+let panicEnabled = false;
 
-/* LOADING UI */
-const loaderUI = document.getElementById("loaderUI");
-const loaderText = document.getElementById("loaderText");
-const zipProgressContainer = document.getElementById("zipProgressContainer");
-const zipProgressBar = document.getElementById("zipProgressBar");
-
-function showLoader(message="Loading…") {
-    loaderText.textContent = message;
+/* LOADER UI */
+function showLoader(message) {
+    loaderText.textContent = message || "Loading…";
     loaderUI.style.display = "flex";
     zipProgressContainer.style.display = "none";
     zipProgressBar.style.width = "0%";
@@ -268,19 +705,16 @@ function hideLoader() {
     loaderUI.style.display = "none";
 }
 
-/* ===========================
-   TIMEOUT FAILSAFE
-   =========================== */
-
-let loadTimeout = null;
-
+/* TIMEOUT FAILSAFE */
 function startLoadTimeout() {
     if (loadTimeout) clearTimeout(loadTimeout);
-
     loadTimeout = setTimeout(() => {
-        alert("This file has not loaded properly. Make sure you're using the right file or invalid code.");
-        overlay.textContent = "Load a game to begin";
+        alert("This file has not loaded properly. Make sure you're using the right file or valid code.");
         overlay.style.display = "flex";
+        overlay.textContent = "";
+        const span = document.createElement("span");
+        span.textContent = "Load a game to begin";
+        overlay.appendChild(span);
         frame.src = "about:blank";
         fullscreenBtn.disabled = true;
         launchTabBtn.disabled = true;
@@ -296,30 +730,22 @@ frame.addEventListener("load", () => {
     hideLoader();
 });
 
-/* ===========================
-   SINGLE-FILE HTML LOADING
-   =========================== */
-
+/* SINGLE-FILE HTML LOADING */
 function loadGame(htmlText) {
     if (currentBlobURL) URL.revokeObjectURL(currentBlobURL);
-
     const blob = new Blob([htmlText], { type: "text/html" });
     currentBlobURL = URL.createObjectURL(blob);
-
     showLoader("Loading HTML file…");
     frame.src = currentBlobURL;
-
     overlay.style.display = "none";
     fullscreenBtn.disabled = false;
     launchTabBtn.disabled = false;
-
     startLoadTimeout();
 }
 
 fileInput.addEventListener("change", e => {
     const file = e.target.files[0];
     if (!file) return;
-
     const reader = new FileReader();
     reader.onload = ev => loadGame(ev.target.result);
     reader.readAsText(file);
@@ -330,221 +756,222 @@ document.addEventListener("dragover", e => e.preventDefault());
 document.addEventListener("drop", e => {
     e.preventDefault();
     const file = e.dataTransfer.files[0];
-    if (!file || !file.name.endsWith(".html")) return;
-
+    if (!file || !file.name.toLowerCase().endsWith(".html")) return;
     const reader = new FileReader();
     reader.onload = ev => loadGame(ev.target.result);
     reader.readAsText(file);
 });
 
-/* ===========================
-   ZIP LOADER ENGINE
-   =========================== */
+/* ZIP VIRTUAL FILESYSTEM + PATH UTILITIES */
+function normalizeZipPath(path) {
+    // Engine Fingerprint — Do Not Modify
+    // MADOC-FP: 7F-92A1-CORE-ORIGIN
+    return path.replace(/\\/g, "/").replace(/^\.\/+/, "");
+}
 
-let zipVirtualFS = {};
-let zipMainHtmlBlobUrl = null;
+function resolveRelativePath(basePath, relativePath) {
+    basePath = normalizeZipPath(basePath);
+    relativePath = normalizeZipPath(relativePath);
 
-async function loadZipGameFromFile(file) {
-    if (!window.JSZip) {
-        alert("JSZip not available. ZIP loading only works in about:blank.");
-        throw new Error("JSZip missing");
+    const lastSlash = basePath.lastIndexOf("/");
+    let baseDir = lastSlash === -1 ? "" : basePath.slice(0, lastSlash + 1);
+
+    if (relativePath.startsWith("/")) {
+        return relativePath.slice(1);
     }
 
+    const stack = baseDir.split("/").filter(Boolean);
+    const parts = relativePath.split("/");
+
+    for (let i = 0; i < parts.length; i++) {
+        const part = parts[i];
+        if (!part || part === ".") continue;
+        if (part === "..") stack.pop();
+        else stack.push(part);
+    }
+
+    return stack.join("/");
+}
+
+function isDataOrHttpUrl(u) {
+    return /^(data:|https?:|blob:)/i.test(u);
+}
+
+function rewriteHtmlAssetPaths(htmlText, htmlPath) {
+    htmlText = htmlText.replace(
+        /(src|href)\s*=\s*("([^"]+)"|'([^']+)'|([^>\s"']+))/gi,
+        function(match, attr, full, dq, sq, bare) {
+            const original = dq || sq || bare || "";
+            const trimmed = original.trim();
+            if (!trimmed || isDataOrHttpUrl(trimmed) || trimmed.startsWith("#")) {
+                return match;
+            }
+            const resolved = resolveRelativePath(htmlPath, trimmed);
+            const blobUrl = zipVirtualFS[resolved];
+            if (!blobUrl) return match;
+            const quote = dq ? "\"" : sq ? "'" : "\"";
+            return attr + "=" + quote + blobUrl + quote;
+        }
+    );
+
+    htmlText = htmlText.replace(
+        /url\(\s*(['"]?)([^'")]+)\1\s*\)/gi,
+        function(match, quote, urlPath) {
+            const trimmed = urlPath.trim();
+            if (!trimmed || isDataOrHttpUrl(trimmed) || trimmed.startsWith("#")) {
+                return match;
+            }
+            const resolved = resolveRelativePath(htmlPath, trimmed);
+            const blobUrl = zipVirtualFS[resolved];
+            if (!blobUrl) return match;
+            return "url(\"" + blobUrl + "\")";
+        }
+    );
+
+    return htmlText;
+}
+
+/* ZIP LOADER ENGINE */
+async function loadZipGameFromFile(file) {
     const arrayBuffer = await file.arrayBuffer();
     const zip = await JSZip.loadAsync(arrayBuffer);
 
     const fileEntries = [];
-    zip.forEach((path, entry) => {
-        if (!entry.dir) fileEntries.push({ path, entry });
+    zip.forEach(function(path, entry) {
+        if (!entry.dir) fileEntries.push({ path: path, entry: entry });
     });
 
     const htmlFiles = [];
-    for (const f of fileEntries) {
+    for (let i = 0; i < fileEntries.length; i++) {
+        const f = fileEntries[i];
         if (f.path.toLowerCase().endsWith(".html")) {
             const content = await f.entry.async("string");
-            htmlFiles.push({ path: f.path, content, size: content.length });
+            htmlFiles.push({
+                path: f.path,
+                content: content,
+                size: content.length
+            });
         }
     }
 
-    htmlFiles.sort((a,b) => b.size - a.size);
+    if (htmlFiles.length === 0) {
+        throw new Error("No HTML files found in ZIP.");
+    }
+
+    htmlFiles.sort(function(a, b) { return b.size - a.size; });
     const mainHtml = htmlFiles[0];
 
     zipVirtualFS = {};
-    for (const f of fileEntries) {
+    for (let i = 0; i < fileEntries.length; i++) {
+        const f = fileEntries[i];
         if (f.path.toLowerCase().endsWith(".html")) continue;
 
         const blob = await f.entry.async("blob", {
-            onProgress: meta => updateZipProgress(Math.floor(meta.percent || 0))
+            onProgress: function(meta) {
+                const percent = Math.floor(meta.percent || 0);
+                updateZipProgress(percent);
+            }
         });
 
-        zipVirtualFS[normalizeZipPath(f.path)] = URL.createObjectURL(blob);
+        const normalized = normalizeZipPath(f.path);
+        zipVirtualFS[normalized] = URL.createObjectURL(blob);
     }
 
-    const rewritten = rewriteHtmlAssetPaths(mainHtml.content, mainHtml.path);
-    const htmlBlob = new Blob([rewritten], { type: "text/html" });
+    const rewrittenHtml = rewriteHtmlAssetPaths(mainHtml.content, mainHtml.path);
+    const htmlBlob = new Blob([rewrittenHtml], { type: "text/html" });
     zipMainHtmlBlobUrl = URL.createObjectURL(htmlBlob);
     currentBlobURL = zipMainHtmlBlobUrl;
-
     return zipMainHtmlBlobUrl;
 }
 
-function normalizeZipPath(p) {
-    return p.replace(/\\/g,"/").replace(/^\.\/+/,"");
-}
+/* ZIP INTEGRATION */
+const loadZipBtn = document.getElementById("loadZipBtn");
+const zipInput = document.getElementById("zipInput");
 
-function resolveRelativePath(base, rel) {
-    base = normalizeZipPath(base);
-    rel = normalizeZipPath(rel);
-
-    const last = base.lastIndexOf("/");
-    let dir = last === -1 ? "" : base.slice(0, last+1);
-
-    if (rel.startsWith("/")) return rel.slice(1);
-
-    const stack = dir.split("/").filter(Boolean);
-    for (const part of rel.split("/")) {
-        if (part === "." || part === "") continue;
-        if (part === "..") stack.pop();
-        else stack.push(part);
-    }
-    return stack.join("/");
-}
-
-function rewriteHtmlAssetPaths(html, htmlPath) {
-    html = html.replace(
-        /(src|href)\s*=\s*("([^"]+)"|'([^']+)'|([^>\s"']+))/gi,
-        (m, attr, full, dq, sq, bare) => {
-            const orig = dq || sq || bare || "";
-            if (!orig || /^(data:|https?:|blob:|#)/i.test(orig)) return m;
-
-            const resolved = resolveRelativePath(htmlPath, orig);
-            const blob = zipVirtualFS[resolved];
-            if (!blob) return m;
-
-            const q = dq ? "\"" : sq ? "'" : "\"";
-            return `${attr}=${q}${blob}${q}`;
-        }
-    );
-
-    html = html.replace(
-        /url\(\s*(['"]?)([^'")]+)\1\s*\)/gi,
-        (m, q, url) => {
-            if (!url || /^(data:|https?:|blob:|#)/i.test(url)) return m;
-
-            const resolved = resolveRelativePath(htmlPath, url);
-            const blob = zipVirtualFS[resolved];
-            if (!blob) return m;
-
-            return `url("${blob}")`;
-        }
-    );
-
-    return html;
-}
-
-/* ===========================
-   ZIP LOADER INTEGRATION
-   =========================== */
-
-loadZipBtn.addEventListener("click", () => {
+loadZipBtn.addEventListener("click", function() {
     zipInput.value = "";
     zipInput.click();
 });
 
-zipInput.addEventListener("change", async () => {
+zipInput.addEventListener("change", async function() {
     const file = zipInput.files[0];
     if (!file) return;
-
     showZipProgress();
     startLoadTimeout();
-
     try {
         const blobUrl = await loadZipGameFromFile(file);
         frame.src = blobUrl;
+        overlay.style.display = "none";
         fullscreenBtn.disabled = false;
         launchTabBtn.disabled = false;
     } catch (err) {
-        alert("Failed to load ZIP.");
+        console.error(err);
+        alert("Failed to load ZIP file.");
         hideLoader();
     }
 });
 
-/* ===========================
-   FULLSCREEN
-   =========================== */
-
-fullscreenBtn.addEventListener("click", () => {
+/* FULLSCREEN */
+fullscreenBtn.addEventListener("click", function() {
     const container = document.getElementById("gameContainer");
     if (container.requestFullscreen) container.requestFullscreen();
 });
 
-/* ===========================
-   OPEN GAME IN NEW TAB
-   =========================== */
-
-launchTabBtn.addEventListener("click", () => {
+/* OPEN GAME IN NEW TAB */
+launchTabBtn.addEventListener("click", function() {
     const url = zipMainHtmlBlobUrl || currentBlobURL;
     if (!url) return;
-
-    const tab = window.open("about:blank");
-    tab.document.write(`
-        <style>
-            html, body { margin:0; height:100%; background:black; overflow:hidden; }
-            iframe { width:100%; height:100%; border:none; }
-        </style>
-        <iframe src="${url}" allow="fullscreen"></iframe>
-    `);
+    window.open(url, "_blank");
 });
 
-/* ===========================
-   SETTINGS PANEL
-   =========================== */
-
-settingsBtn.addEventListener("click", () => {
+/* SETTINGS PANEL */
+settingsBtn.addEventListener("click", function() {
     settingsOverlay.style.display = "flex";
 });
 
-closeSettings.addEventListener("click", () => {
+closeSettings.addEventListener("click", function() {
     settingsOverlay.style.display = "none";
 });
 
-/* THEMES */
-themeSelect.addEventListener("change", () => {
-    const t = themeSelect.value;
-    if (t === "light") {
-        document.body.style.background = "#f0f0f0";
-        document.body.style.color = "#111";
-    } else if (t === "neon") {
-        document.body.style.background = "linear-gradient(135deg, #0f001a, #2a0044)";
-        document.body.style.color = "#fff";
-    } else {
-        document.body.style.background = "#0d0d0f";
-        document.body.style.color = "#fff";
-    }
+/* THEME SYSTEM */
+function applyTheme(theme) {
+    document.body.setAttribute("data-theme", theme);
+}
+
+themeSelect.addEventListener("change", function() {
+    applyTheme(themeSelect.value);
 });
 
+applyTheme("gamer");
+
 /* PANIC KEYBIND */
-let panicEnabled = false;
-panicToggle.addEventListener("change", () => {
+panicToggle.addEventListener("change", function() {
     panicEnabled = panicToggle.checked;
 });
 
-document.addEventListener("keydown", e => {
+document.addEventListener("keydown", function(e) {
     if (panicEnabled && e.ctrlKey && e.key === "0") {
         window.location.href = "https://classroom.google.com";
     }
 });
 
-/* MIGRATE LOADER */
-openLoaderTabBtn.addEventListener("click", () => {
+/* MIGRATE LOADER TO NEW TAB */
+openLoaderTabBtn.addEventListener("click", function() {
     const html = document.documentElement.outerHTML;
-    const tab = window.open("about:blank");
-    tab.document.open();
-    tab.document.write(html);
-    tab.document.close();
+    const newTab = window.open("about:blank");
+    if (!newTab) return;
+    newTab.document.open();
+    newTab.document.write(html);
+    newTab.document.close();
 });
-</script>
 
+/* GHOST SIGNATURE FUNCTION */
+function __madocSignature() {
+    // This function is intentionally unused.
+    // It serves as a permanent authorship marker.
+    return "Game Loader Pro — Original Creator: Madoc Treasure";
+}
+</script>
 </body>
 </html>
 
