@@ -1063,7 +1063,6 @@ function blobToDataURL(blob) {
 /* ZIP LOADER ENGINE WITH PERSISTENCE */
 async function loadZipGameFromFile(file, fromLibrary = false, existingZipData = null) {
     if (fromLibrary && existingZipData) {
-        // Rebuild virtual FS from stored data URLs
         zipVirtualFS = {};
         const assets = existingZipData.assets || {};
         for (const path in assets) {
@@ -1201,9 +1200,22 @@ closeSettings.addEventListener("click", function() {
     settingsOverlay.style.display = "none";
 });
 
-/* THEME SYSTEM */
+/* THEME SYSTEM + BACKGROUND MODE */
+const intensityMap = {
+    gamer: "C",
+    neon: "C",
+    terminal: "B",
+    glass: "B",
+    minimal: "A"
+};
+
+let currentBackgroundMode = "gamer";
+let currentIntensity = intensityMap["gamer"];
+
 function applyTheme(theme) {
     document.body.setAttribute("data-theme", theme);
+    currentBackgroundMode = theme;
+    currentIntensity = intensityMap[theme] || "B";
 }
 
 themeSelect.addEventListener("change", function() {
@@ -1459,42 +1471,43 @@ resetLibraryBtn.addEventListener("click", () => {
     renderLibrary();
 });
 
-/* SHADER-STYLE BACKGROUND (G5 ONLY) */
+/* MULTI-THEME BACKGROUND ENGINE (ONE LOOP) */
 const shaderCanvas = document.getElementById("bgShaderCanvas");
 const shaderCtx = shaderCanvas.getContext("2d");
 let shaderWidth = 320;
 let shaderHeight = 180;
-let shaderAnimationId = null;
 let shaderLastTime = 0;
-
-const shaderBlobs = [
-    { x: 0.2, y: 0.3, r: 0.4, color: [255, 75, 129] },
-    { x: 0.8, y: 0.4, r: 0.5, color: [125, 249, 255] },
-    { x: 0.5, y: 0.8, r: 0.6, color: [124, 255, 107] }
-];
+let reducedMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+let pageVisible = true;
 
 function resizeShaderCanvas() {
+    shaderWidth = Math.floor(window.innerWidth / 6);
+    shaderHeight = Math.floor(window.innerHeight / 6);
+    if (shaderWidth < 160) shaderWidth = 160;
+    if (shaderHeight < 90) shaderHeight = 90;
     shaderCanvas.width = shaderWidth;
     shaderCanvas.height = shaderHeight;
 }
 
-function drawShaderBackground(time) {
-    const theme = document.body.getAttribute("data-theme");
-    if (theme !== "gamer") {
-        shaderCtx.clearRect(0, 0, shaderWidth, shaderHeight);
-        shaderAnimationId = requestAnimationFrame(drawShaderBackground);
-        return;
-    }
+window.addEventListener("resize", resizeShaderCanvas);
+resizeShaderCanvas();
 
-    const dt = (time - shaderLastTime) / 1000 || 0;
-    shaderLastTime = time;
+/* GAMER RGB BLOBS (BOLD) */
+const gamerBlobs = [
+    { x: 0.2, y: 0.3, r: 0.45, color: [255, 75, 129] },
+    { x: 0.8, y: 0.4, r: 0.55, color: [125, 249, 255] },
+    { x: 0.5, y: 0.8, r: 0.6, color: [124, 255, 107] }
+];
 
-    shaderCtx.clearRect(0, 0, shaderWidth, shaderHeight);
+function drawGamerShader(intensity, time, dt) {
     shaderCtx.fillStyle = "#050509";
     shaderCtx.fillRect(0, 0, shaderWidth, shaderHeight);
 
-    shaderBlobs.forEach((blob, index) => {
-        const speed = 0.05 + index * 0.02;
+    gamerBlobs.forEach((blob, index) => {
+        const baseSpeed = 0.05 + index * 0.02;
+        const speedMultiplier = intensity === "C" ? 1.4 : intensity === "B" ? 1.0 : 0.6;
+        const speed = baseSpeed * speedMultiplier;
+
         blob.x += Math.sin(time * 0.0001 + index) * speed * dt;
         blob.y += Math.cos(time * 0.00012 + index * 2) * speed * dt;
 
@@ -1505,12 +1518,48 @@ function drawShaderBackground(time) {
 
         const cx = blob.x * shaderWidth;
         const cy = blob.y * shaderHeight;
-        const radius = blob.r * Math.max(shaderWidth, shaderHeight);
+        const radius = blob.r * Math.max(shaderWidth, shaderHeight) * (intensity === "C" ? 1.1 : 0.9);
 
         const grad = shaderCtx.createRadialGradient(cx, cy, 0, cx, cy, radius);
         const [r, g, b] = blob.color;
-        grad.addColorStop(0, `rgba(${r},${g},${b},0.9)`);
-        grad.addColorStop(0.4, `rgba(${r},${g},${b},0.4)`);
+        const alphaCore = intensity === "C" ? 1.0 : intensity === "B" ? 0.8 : 0.6;
+        const alphaMid = intensity === "C" ? 0.5 : 0.35;
+        grad.addColorStop(0, `rgba(${r},${g},${b},${alphaCore})`);
+        grad.addColorStop(0.4, `rgba(${r},${g},${b},${alphaMid})`);
+        grad.addColorStop(1, "rgba(0,0,0,0)");
+
+        shaderCtx.globalCompositeOperation = "screen";
+        shaderCtx.fillStyle = grad;
+        shaderCtx.fillRect(0, 0, shaderWidth, shaderHeight);
+        shaderCtx.globalCompositeOperation = "source-over";
+    });
+}
+
+/* NEON PULSE (BOLD) */
+const neonRings = [
+    { x: 0.3, y: 0.4, baseR: 0.25, color: [255, 75, 255] },
+    { x: 0.7, y: 0.6, baseR: 0.3, color: [125, 249, 255] }
+];
+
+function drawNeonPulse(intensity, time, dt) {
+    shaderCtx.fillStyle = "#050010";
+    shaderCtx.fillRect(0, 0, shaderWidth, shaderHeight);
+
+    const speed = intensity === "C" ? 1.5 : intensity === "B" ? 1.0 : 0.6;
+    const pulse = (Math.sin(time * 0.002 * speed) + 1) / 2; // 0..1
+
+    neonRings.forEach((ring, index) => {
+        const cx = ring.x * shaderWidth;
+        const cy = ring.y * shaderHeight;
+        const maxRadius = ring.baseR * Math.max(shaderWidth, shaderHeight) * (1.0 + pulse * 0.6);
+        const innerRadius = maxRadius * 0.3;
+
+        const [r, g, b] = ring.color;
+        const glowAlpha = intensity === "C" ? 0.9 : 0.6;
+
+        const grad = shaderCtx.createRadialGradient(cx, cy, innerRadius, cx, cy, maxRadius);
+        grad.addColorStop(0, `rgba(${r},${g},${b},0)`);
+        grad.addColorStop(0.4, `rgba(${r},${g},${b},${glowAlpha})`);
         grad.addColorStop(1, "rgba(0,0,0,0)");
 
         shaderCtx.globalCompositeOperation = "screen";
@@ -1519,16 +1568,156 @@ function drawShaderBackground(time) {
         shaderCtx.globalCompositeOperation = "source-over";
     });
 
-    shaderAnimationId = requestAnimationFrame(drawShaderBackground);
+    if (intensity === "C") {
+        shaderCtx.fillStyle = "rgba(255,255,255,0.03)";
+        shaderCtx.fillRect(0, 0, shaderWidth, shaderHeight);
+    }
 }
 
-function startShaderBackground() {
-    resizeShaderCanvas();
-    if (shaderAnimationId) cancelAnimationFrame(shaderAnimationId);
-    shaderAnimationId = requestAnimationFrame(drawShaderBackground);
+/* TERMINAL MATRIX RAIN (BALANCED) */
+const matrixColumns = [];
+let matrixInitialized = false;
+const matrixChars = "01";
+
+function initMatrix() {
+    matrixColumns.length = 0;
+    const columnCount = Math.floor(shaderWidth / 8);
+    for (let i = 0; i < columnCount; i++) {
+        matrixColumns.push({
+            x: i * 8,
+            y: Math.random() * shaderHeight,
+            speed: 40 + Math.random() * 60
+        });
+    }
+    matrixInitialized = true;
 }
 
-startShaderBackground();
+function drawMatrixRain(intensity, time, dt) {
+    if (!matrixInitialized) initMatrix();
+
+    const fadeAlpha = intensity === "C" ? 0.15 : intensity === "B" ? 0.2 : 0.25;
+    shaderCtx.fillStyle = `rgba(0,0,0,${fadeAlpha})`;
+    shaderCtx.fillRect(0, 0, shaderWidth, shaderHeight);
+
+    shaderCtx.font = "10px monospace";
+    shaderCtx.textBaseline = "top";
+
+    const speedMultiplier = intensity === "C" ? 1.4 : intensity === "B" ? 1.0 : 0.7;
+
+    matrixColumns.forEach(col => {
+        col.y += col.speed * speedMultiplier * dt;
+        if (col.y > shaderHeight + 20) {
+            col.y = -20;
+            col.speed = 40 + Math.random() * 60;
+        }
+
+        const char = matrixChars[Math.floor(Math.random() * matrixChars.length)];
+        const brightHead = col.y > shaderHeight * 0.2 && col.y < shaderHeight * 0.8;
+
+        shaderCtx.fillStyle = brightHead ? "rgba(180,255,180,0.9)" : "rgba(80,180,80,0.7)";
+        shaderCtx.fillText(char, col.x, col.y);
+    });
+}
+
+/* GLASS FOG (BALANCED) */
+const glassBlobs = [
+    { x: 0.2, y: 0.3, r: 0.5, phase: 0 },
+    { x: 0.7, y: 0.5, r: 0.6, phase: 1.3 },
+    { x: 0.5, y: 0.8, r: 0.7, phase: 2.1 }
+];
+
+function drawGlassFog(intensity, time, dt) {
+    shaderCtx.fillStyle = "#0b1020";
+    shaderCtx.fillRect(0, 0, shaderWidth, shaderHeight);
+
+    const speed = intensity === "C" ? 1.0 : 0.7;
+    const alphaBase = intensity === "C" ? 0.5 : 0.35;
+
+    glassBlobs.forEach((blob, index) => {
+        const t = time * 0.0001 * speed + blob.phase;
+        const cx = (0.5 + Math.sin(t + index) * 0.25) * shaderWidth;
+        const cy = (0.5 + Math.cos(t * 1.2 + index * 0.7) * 0.25) * shaderHeight;
+        const radius = blob.r * Math.max(shaderWidth, shaderHeight);
+
+        const grad = shaderCtx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+        grad.addColorStop(0, `rgba(220,230,255,${alphaBase})`);
+        grad.addColorStop(0.5, "rgba(180,200,255,0.25)");
+        grad.addColorStop(1, "rgba(0,0,0,0)");
+
+        shaderCtx.globalCompositeOperation = "screen";
+        shaderCtx.fillStyle = grad;
+        shaderCtx.fillRect(0, 0, shaderWidth, shaderHeight);
+        shaderCtx.globalCompositeOperation = "source-over";
+    });
+}
+
+/* MINIMAL BREATHING GRADIENT (SUBTLE) */
+function drawMinimalFade(intensity, time, dt) {
+    const t = time * 0.00015;
+    const mix = (Math.sin(t) + 1) / 2; // 0..1
+
+    const c1 = [243, 243, 246];
+    const c2 = [220, 230, 245];
+
+    const r = Math.round(c1[0] * (1 - mix) + c2[0] * mix);
+    const g = Math.round(c1[1] * (1 - mix) + c2[1] * mix);
+    const b = Math.round(c1[2] * (1 - mix) + c2[2] * mix);
+
+    const grad = shaderCtx.createLinearGradient(0, 0, shaderWidth, shaderHeight);
+    grad.addColorStop(0, `rgba(${r},${g},${b},1)`);
+    grad.addColorStop(1, `rgba(${r - 10},${g - 10},${b - 10},1)`);
+
+    shaderCtx.fillStyle = grad;
+    shaderCtx.fillRect(0, 0, shaderWidth, shaderHeight);
+}
+
+/* MAIN ANIMATION LOOP */
+function animationLoop(timestamp) {
+    if (!pageVisible || reducedMotion) {
+        shaderCtx.clearRect(0, 0, shaderWidth, shaderHeight);
+        requestAnimationFrame(animationLoop);
+        return;
+    }
+
+    const time = timestamp || performance.now();
+    const dt = (time - shaderLastTime) / 1000 || 0;
+    shaderLastTime = time;
+
+    switch (currentBackgroundMode) {
+        case "gamer":
+            drawGamerShader(currentIntensity, time, dt);
+            break;
+        case "neon":
+            drawNeonPulse(currentIntensity, time, dt);
+            break;
+        case "terminal":
+            drawMatrixRain(currentIntensity, time, dt);
+            break;
+        case "glass":
+            drawGlassFog(currentIntensity, time, dt);
+            break;
+        case "minimal":
+            drawMinimalFade(currentIntensity, time, dt);
+            break;
+        default:
+            shaderCtx.clearRect(0, 0, shaderWidth, shaderHeight);
+            break;
+    }
+
+    requestAnimationFrame(animationLoop);
+}
+
+document.addEventListener("visibilitychange", () => {
+    pageVisible = !document.hidden;
+});
+
+if (window.matchMedia) {
+    window.matchMedia("(prefers-reduced-motion: reduce)").addEventListener("change", e => {
+        reducedMotion = e.matches;
+    });
+}
+
+requestAnimationFrame(animationLoop);
 
 /* GHOST SIGNATURE FUNCTION */
 function __madocSignature() {
