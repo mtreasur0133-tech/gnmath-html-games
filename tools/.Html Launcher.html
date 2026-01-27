@@ -41,6 +41,19 @@
         align-items: center;
         padding: 18px;
         transition: background 0.25s ease, color 0.25s ease;
+        position: relative;
+        overflow-x: hidden;
+    }
+
+    #bgShaderCanvas {
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        width: 100%;
+        height: 100%;
+        filter: blur(26px);
+        opacity: 0.9;
+        pointer-events: none;
     }
 
     h1 {
@@ -73,12 +86,19 @@
         opacity: 0.9;
     }
 
-    .settings-btn {
+    .top-actions {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .settings-btn,
+    .icon-btn {
         background: rgba(10,10,20,0.9);
         border-radius: 999px;
         border: 1px solid rgba(120,120,200,0.5);
         color: var(--text-main);
-        padding: 6px 12px;
+        padding: 6px 10px;
         font-size: 13px;
         display: inline-flex;
         align-items: center;
@@ -88,18 +108,21 @@
         transition: background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
     }
 
-    .settings-btn span.icon {
+    .settings-btn span.icon,
+    .icon-btn span.icon {
         font-size: 15px;
     }
 
-    .settings-btn:hover {
+    .settings-btn:hover,
+    .icon-btn:hover {
         background: radial-gradient(circle at 0% 0%, rgba(255,75,129,0.25), rgba(10,10,20,0.95));
         transform: translateY(-1px);
         border-color: rgba(180,180,255,0.8);
         box-shadow: 0 0 18px rgba(124,255,107,0.25);
     }
 
-    .settings-btn:active {
+    .settings-btn:active,
+    .icon-btn:active {
         transform: translateY(0);
         box-shadow: 0 0 10px rgba(124,255,107,0.15);
     }
@@ -324,7 +347,8 @@
         opacity: 0.8;
     }
 
-    .settings-overlay {
+    .settings-overlay,
+    .library-overlay {
         position: fixed;
         inset: 0;
         background: rgba(0,0,0,0.7);
@@ -335,7 +359,8 @@
         backdrop-filter: blur(8px);
     }
 
-    .settings-panel {
+    .settings-panel,
+    .library-panel {
         width: 280px;
         background: rgba(10,10,20,0.98);
         border-radius: var(--radius-lg);
@@ -346,12 +371,24 @@
         color: var(--text-main);
     }
 
-    .settings-panel h2 {
+    .library-panel {
+        width: 600px;
+        max-height: 80vh;
+        background: rgba(10,10,25,0.78);
+        backdrop-filter: blur(16px);
+        border-color: rgba(180,180,255,0.8);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .settings-panel h2,
+    .library-panel h2 {
         margin: 0 0 4px;
         font-size: 16px;
     }
 
-    .settings-panel p.sub {
+    .settings-panel p.sub,
+    .library-panel p.sub {
         margin: 0 0 10px;
         font-size: 11px;
         color: var(--text-muted);
@@ -413,14 +450,130 @@
         cursor: pointer;
     }
 
+    .library-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 10px;
+    }
+
+    .library-actions {
+        display: flex;
+        gap: 6px;
+    }
+
+    .library-actions .btn {
+        font-size: 11px;
+        padding: 6px 10px;
+    }
+
+    .library-list {
+        flex: 1;
+        overflow-y: auto;
+        padding-right: 4px;
+        margin-bottom: 10px;
+    }
+
+    .library-empty {
+        font-size: 12px;
+        color: var(--text-muted);
+        text-align: center;
+        margin-top: 20px;
+    }
+
+    .library-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 8px 10px;
+        border-radius: var(--radius-md);
+        background: radial-gradient(circle at 0% 0%, rgba(124,255,107,0.08), rgba(10,10,25,0.9));
+        border: 1px solid rgba(120,120,200,0.6);
+        box-shadow: 0 10px 24px rgba(0,0,0,0.6);
+        margin-bottom: 8px;
+        transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast), background var(--transition-fast);
+    }
+
+    .library-item:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 16px 32px rgba(0,0,0,0.8);
+        border-color: rgba(180,180,255,0.9);
+        background: radial-gradient(circle at 0% 0%, rgba(124,255,107,0.14), rgba(10,10,25,0.96));
+    }
+
+    .library-main {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+    }
+
+    .library-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        background: radial-gradient(circle at 30% 0%, rgba(255,75,129,0.7), rgba(10,10,25,1));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+
+    .library-text {
+        min-width: 0;
+    }
+
+    .library-name {
+        font-size: 13px;
+        font-weight: 600;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+    }
+
+    .library-meta {
+        font-size: 11px;
+        color: var(--text-muted);
+    }
+
+    .library-meta span {
+        margin-right: 6px;
+    }
+
+    .library-actions-row {
+        display: flex;
+        gap: 4px;
+        flex-shrink: 0;
+    }
+
+    .library-actions-row .btn {
+        font-size: 11px;
+        padding: 5px 8px;
+        box-shadow: none;
+    }
+
+    .library-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 11px;
+        color: var(--text-muted);
+    }
+
+    .library-footer .btn {
+        font-size: 11px;
+        padding: 5px 10px;
+    }
+
     @keyframes spin {
         from { transform: rotate(0deg); }
         to { transform: rotate(360deg); }
     }
 
-    /* ===========================
-       THEME PACKS
-       =========================== */
+    /* THEME PACKS */
 
     body[data-theme="gamer"] {
         background: radial-gradient(circle at 0% 0%, #050509, #020207);
@@ -441,14 +594,17 @@
     }
 
     body[data-theme="minimal"] .settings-panel,
-    body[data-theme="minimal"] #gameContainer {
+    body[data-theme="minimal"] #gameContainer,
+    body[data-theme="minimal"] .library-panel {
         background: #ffffff;
         border-color: #d0d0dd;
         box-shadow: 0 18px 40px rgba(0,0,0,0.08);
     }
 
     body[data-theme="minimal"] .file-input-label,
-    body[data-theme="minimal"] .btn.secondary {
+    body[data-theme="minimal"] .btn.secondary,
+    body[data-theme="minimal"] .icon-btn,
+    body[data-theme="minimal"] .settings-btn {
         background: #ffffff;
         border-color: #d0d0dd;
         color: #111;
@@ -483,7 +639,8 @@
             0 0 40px rgba(125,249,255,0.4);
     }
 
-    body[data-theme="neon"] .settings-panel {
+    body[data-theme="neon"] .settings-panel,
+    body[data-theme="neon"] .library-panel {
         background: rgba(10,0,30,0.98);
         border-color: rgba(125,249,255,0.8);
     }
@@ -504,7 +661,8 @@
     }
 
     body[data-theme="glass"] #gameContainer,
-    body[data-theme="glass"] .settings-panel {
+    body[data-theme="glass"] .settings-panel,
+    body[data-theme="glass"] .library-panel {
         background: rgba(10,10,25,0.7);
         border-color: rgba(180,180,255,0.7);
         backdrop-filter: blur(14px);
@@ -512,7 +670,9 @@
     }
 
     body[data-theme="glass"] .file-input-label,
-    body[data-theme="glass"] .btn.secondary {
+    body[data-theme="glass"] .btn.secondary,
+    body[data-theme="glass"] .icon-btn,
+    body[data-theme="glass"] .settings-btn {
         background: rgba(15,15,35,0.7);
         border-color: rgba(180,180,255,0.7);
     }
@@ -524,14 +684,17 @@
     }
 
     body[data-theme="terminal"] #gameContainer,
-    body[data-theme="terminal"] .settings-panel {
+    body[data-theme="terminal"] .settings-panel,
+    body[data-theme="terminal"] .library-panel {
         background: #020503;
         border-color: #0f3f1a;
         box-shadow: 0 0 24px rgba(0,255,0,0.2);
     }
 
     body[data-theme="terminal"] .file-input-label,
-    body[data-theme="terminal"] .btn.secondary {
+    body[data-theme="terminal"] .btn.secondary,
+    body[data-theme="terminal"] .icon-btn,
+    body[data-theme="terminal"] .settings-btn {
         background: #020503;
         border-color: #0f3f1a;
         color: #d0ffd0;
@@ -568,21 +731,31 @@
             flex-direction: column;
             align-items: flex-start;
         }
+        .library-panel {
+            width: 90%;
+        }
     }
 </style>
 </head>
 <body data-theme="gamer">
 
+<canvas id="bgShaderCanvas"></canvas>
+
 <div class="top-bar">
     <div class="brand-chip">Game Loader Pro 2026</div>
-    <button id="settingsBtn" class="settings-btn">
-        <span class="icon">⚙️</span>
-        <span>Settings</span>
-    </button>
+    <div class="top-actions">
+        <button id="libraryBtn" class="icon-btn" title="Library">
+            <span class="icon">📚</span>
+        </button>
+        <button id="settingsBtn" class="settings-btn">
+            <span class="icon">⚙️</span>
+            <span>Settings</span>
+        </button>
+    </div>
 </div>
 
 <h1>Game Loader Pro — Data URL Edition</h1>
-<p class="subtitle">Load single‑file HTML games or ZIP‑packed games with a virtual filesystem.</p>
+<p class="subtitle">Load single‑file HTML games or ZIP‑packed games with a virtual filesystem and portable library.</p>
 
 <div class="controls-row">
     <label class="file-input-label">
@@ -648,6 +821,32 @@
     </div>
 </div>
 
+<div id="libraryOverlay" class="library-overlay">
+    <div class="library-panel">
+        <button id="closeLibrary" class="close-btn">✕</button>
+        <div class="library-header">
+            <div>
+                <h2>Your Library</h2>
+                <p class="sub">Portable games stored in a single .gamepack file.</p>
+            </div>
+            <div class="library-actions">
+                <button id="importPackBtn" class="btn secondary">Import (.gamepack)</button>
+                <button id="exportPackBtn" class="btn">Export (.gamepack)</button>
+                <input type="file" id="importPackInput" accept=".gamepack,application/json" style="display:none;">
+            </div>
+        </div>
+
+        <div id="libraryList" class="library-list">
+            <div class="library-empty" id="libraryEmpty">No games in your library yet. Load a game to add it.</div>
+        </div>
+
+        <div class="library-footer">
+            <span>Game Loader Pro Library — v1</span>
+            <button id="resetLibraryBtn" class="btn secondary">Reset Library</button>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script>
 /************************************************************
@@ -676,11 +875,24 @@ const themeSelect = document.getElementById("themeSelect");
 const openLoaderTabBtn = document.getElementById("openLoaderTabBtn");
 const panicToggle = document.getElementById("panicToggle");
 
+const libraryBtn = document.getElementById("libraryBtn");
+const libraryOverlay = document.getElementById("libraryOverlay");
+const closeLibrary = document.getElementById("closeLibrary");
+const libraryList = document.getElementById("libraryList");
+const libraryEmpty = document.getElementById("libraryEmpty");
+const importPackBtn = document.getElementById("importPackBtn");
+const exportPackBtn = document.getElementById("exportPackBtn");
+const importPackInput = document.getElementById("importPackInput");
+const resetLibraryBtn = document.getElementById("resetLibraryBtn");
+
 let currentBlobURL = null;
 let zipVirtualFS = {};
 let zipMainHtmlBlobUrl = null;
 let loadTimeout = null;
 let panicEnabled = false;
+
+/* LIBRARY DATA (IN-MEMORY) */
+let gameLibrary = []; // array of {id,name,type,icon,theme,htmlData?,zipData?}
 
 /* LOADER UI */
 function showLoader(message) {
@@ -731,7 +943,7 @@ frame.addEventListener("load", () => {
 });
 
 /* SINGLE-FILE HTML LOADING */
-function loadGame(htmlText) {
+function loadGame(htmlText, fromLibrary = false) {
     if (currentBlobURL) URL.revokeObjectURL(currentBlobURL);
     const blob = new Blob([htmlText], { type: "text/html" });
     currentBlobURL = URL.createObjectURL(blob);
@@ -741,6 +953,13 @@ function loadGame(htmlText) {
     fullscreenBtn.disabled = false;
     launchTabBtn.disabled = false;
     startLoadTimeout();
+
+    if (!fromLibrary) {
+        promptAddToLibrary({
+            type: "html",
+            rawHtml: htmlText
+        });
+    }
 }
 
 fileInput.addEventListener("change", e => {
@@ -831,8 +1050,37 @@ function rewriteHtmlAssetPaths(htmlText, htmlPath) {
     return htmlText;
 }
 
-/* ZIP LOADER ENGINE */
-async function loadZipGameFromFile(file) {
+/* HELPERS: BLOB -> DATA URL */
+function blobToDataURL(blob) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = e => resolve(e.target.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+    });
+}
+
+/* ZIP LOADER ENGINE WITH PERSISTENCE */
+async function loadZipGameFromFile(file, fromLibrary = false, existingZipData = null) {
+    if (fromLibrary && existingZipData) {
+        // Rebuild virtual FS from stored data URLs
+        zipVirtualFS = {};
+        const assets = existingZipData.assets || {};
+        for (const path in assets) {
+            const dataUrl = assets[path];
+            const blob = await (await fetch(dataUrl)).blob();
+            const url = URL.createObjectURL(blob);
+            zipVirtualFS[path] = url;
+        }
+        const mainHtmlDataUrl = existingZipData.mainHtml;
+        const mainHtmlBlob = await (await fetch(mainHtmlDataUrl)).blob();
+        const mainHtmlText = await mainHtmlBlob.text();
+        const htmlBlob = new Blob([mainHtmlText], { type: "text/html" });
+        zipMainHtmlBlobUrl = URL.createObjectURL(htmlBlob);
+        currentBlobURL = zipMainHtmlBlobUrl;
+        return zipMainHtmlBlobUrl;
+    }
+
     const arrayBuffer = await file.arrayBuffer();
     const zip = await JSZip.loadAsync(arrayBuffer);
 
@@ -862,6 +1110,8 @@ async function loadZipGameFromFile(file) {
     const mainHtml = htmlFiles[0];
 
     zipVirtualFS = {};
+    const assetsData = {};
+
     for (let i = 0; i < fileEntries.length; i++) {
         const f = fileEntries[i];
         if (f.path.toLowerCase().endsWith(".html")) continue;
@@ -874,13 +1124,31 @@ async function loadZipGameFromFile(file) {
         });
 
         const normalized = normalizeZipPath(f.path);
-        zipVirtualFS[normalized] = URL.createObjectURL(blob);
+        const url = URL.createObjectURL(blob);
+        zipVirtualFS[normalized] = url;
+
+        const dataUrl = await blobToDataURL(blob);
+        assetsData[normalized] = dataUrl;
     }
 
     const rewrittenHtml = rewriteHtmlAssetPaths(mainHtml.content, mainHtml.path);
     const htmlBlob = new Blob([rewrittenHtml], { type: "text/html" });
     zipMainHtmlBlobUrl = URL.createObjectURL(htmlBlob);
     currentBlobURL = zipMainHtmlBlobUrl;
+
+    const mainHtmlDataUrl = await blobToDataURL(new Blob([rewrittenHtml], { type: "text/html" }));
+
+    if (!fromLibrary) {
+        promptAddToLibrary({
+            type: "zip",
+            zipData: {
+                mainHtml: mainHtmlDataUrl,
+                assets: assetsData
+            },
+            filename: file.name
+        });
+    }
+
     return zipMainHtmlBlobUrl;
 }
 
@@ -965,6 +1233,303 @@ openLoaderTabBtn.addEventListener("click", function() {
     newTab.document.close();
 });
 
+/* LIBRARY UI */
+libraryBtn.addEventListener("click", () => {
+    libraryOverlay.style.display = "flex";
+    renderLibrary();
+});
+
+closeLibrary.addEventListener("click", () => {
+    libraryOverlay.style.display = "none";
+});
+
+/* LIBRARY HELPERS */
+function ensureLibraryEmptyState() {
+    if (gameLibrary.length === 0) {
+        libraryEmpty.style.display = "block";
+    } else {
+        libraryEmpty.style.display = "none";
+    }
+}
+
+function renderLibrary() {
+    libraryList.innerHTML = "";
+    ensureLibraryEmptyState();
+    if (gameLibrary.length === 0) {
+        libraryList.appendChild(libraryEmpty);
+        return;
+    }
+
+    gameLibrary.forEach(game => {
+        const item = document.createElement("div");
+        item.className = "library-item";
+
+        const main = document.createElement("div");
+        main.className = "library-main";
+
+        const icon = document.createElement("div");
+        icon.className = "library-icon";
+        icon.textContent = game.icon || (game.type === "zip" ? "🎮" : "📄");
+
+        const text = document.createElement("div");
+        text.className = "library-text";
+
+        const name = document.createElement("div");
+        name.className = "library-name";
+        name.textContent = game.name;
+
+        const meta = document.createElement("div");
+        meta.className = "library-meta";
+        const typeSpan = document.createElement("span");
+        typeSpan.textContent = game.type === "zip" ? "ZIP Game" : "HTML Game";
+        const themeSpan = document.createElement("span");
+        themeSpan.textContent = "Theme: " + (game.theme || "default");
+        meta.appendChild(typeSpan);
+        meta.appendChild(themeSpan);
+
+        text.appendChild(name);
+        text.appendChild(meta);
+
+        main.appendChild(icon);
+        main.appendChild(text);
+
+        const actionsRow = document.createElement("div");
+        actionsRow.className = "library-actions-row";
+
+        const playBtn = document.createElement("button");
+        playBtn.className = "btn secondary";
+        playBtn.textContent = "Play";
+        playBtn.addEventListener("click", () => playFromLibrary(game.id));
+
+        const renameBtn = document.createElement("button");
+        renameBtn.className = "btn secondary";
+        renameBtn.textContent = "Rename";
+        renameBtn.addEventListener("click", () => renameLibraryGame(game.id));
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.className = "btn secondary";
+        deleteBtn.textContent = "Delete";
+        deleteBtn.addEventListener("click", () => deleteLibraryGame(game.id));
+
+        actionsRow.appendChild(playBtn);
+        actionsRow.appendChild(renameBtn);
+        actionsRow.appendChild(deleteBtn);
+
+        item.appendChild(main);
+        item.appendChild(actionsRow);
+
+        libraryList.appendChild(item);
+    });
+}
+
+/* LIBRARY OPERATIONS */
+function generateId() {
+    return "g_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+}
+
+function promptAddToLibrary(info) {
+    const defaultName = info.filename || "Untitled Game";
+    const name = prompt("Add this game to your library? Enter a name:", defaultName);
+    if (!name) return;
+
+    const icon = prompt("Optional: Enter an emoji icon for this game (or leave blank):", info.type === "zip" ? "🎮" : "📄") || (info.type === "zip" ? "🎮" : "📄");
+    const theme = document.body.getAttribute("data-theme") || "gamer";
+
+    if (info.type === "html") {
+        const htmlDataUrl = "data:text/html;base64," + btoa(unescape(encodeURIComponent(info.rawHtml)));
+        gameLibrary.push({
+            id: generateId(),
+            name,
+            icon,
+            theme,
+            type: "html",
+            htmlData: htmlDataUrl
+        });
+    } else if (info.type === "zip" && info.zipData) {
+        gameLibrary.push({
+            id: generateId(),
+            name,
+            icon,
+            theme,
+            type: "zip",
+            zipData: info.zipData
+        });
+    }
+
+    if (libraryOverlay.style.display === "flex") {
+        renderLibrary();
+    }
+}
+
+async function playFromLibrary(id) {
+    const game = gameLibrary.find(g => g.id === id);
+    if (!game) return;
+
+    applyTheme(game.theme || "gamer");
+    themeSelect.value = game.theme || "gamer";
+
+    if (game.type === "html" && game.htmlData) {
+        const res = await fetch(game.htmlData);
+        const text = await res.text();
+        loadGame(text, true);
+    } else if (game.type === "zip" && game.zipData) {
+        showZipProgress();
+        startLoadTimeout();
+        try {
+            const blobUrl = await loadZipGameFromFile(null, true, game.zipData);
+            frame.src = blobUrl;
+            overlay.style.display = "none";
+            fullscreenBtn.disabled = false;
+            launchTabBtn.disabled = false;
+        } catch (err) {
+            console.error(err);
+            alert("Failed to load ZIP game from library.");
+            hideLoader();
+        }
+    }
+}
+
+function renameLibraryGame(id) {
+    const game = gameLibrary.find(g => g.id === id);
+    if (!game) return;
+    const newName = prompt("Enter a new name for this game:", game.name);
+    if (!newName) return;
+    game.name = newName;
+    renderLibrary();
+}
+
+function deleteLibraryGame(id) {
+    if (!confirm("Remove this game from your library?")) return;
+    gameLibrary = gameLibrary.filter(g => g.id !== id);
+    renderLibrary();
+}
+
+/* EXPORT / IMPORT .GAMEPACK */
+exportPackBtn.addEventListener("click", () => {
+    if (gameLibrary.length === 0) {
+        alert("Your library is empty. Load and add games before exporting.");
+        return;
+    }
+    const pack = {
+        version: 1,
+        games: gameLibrary
+    };
+    const json = JSON.stringify(pack);
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "game-loader-library.gamepack";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+});
+
+importPackBtn.addEventListener("click", () => {
+    importPackInput.value = "";
+    importPackInput.click();
+});
+
+importPackInput.addEventListener("change", () => {
+    const file = importPackInput.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+        try {
+            const data = JSON.parse(e.target.result);
+            if (!data || typeof data !== "object" || !Array.isArray(data.games)) {
+                alert("Invalid .gamepack file.");
+                return;
+            }
+            gameLibrary = data.games;
+            renderLibrary();
+            alert("Library imported successfully.");
+        } catch (err) {
+            console.error(err);
+            alert("Failed to import .gamepack file.");
+        }
+    };
+    reader.readAsText(file);
+});
+
+resetLibraryBtn.addEventListener("click", () => {
+    if (!confirm("Reset your library? This only clears the in-memory list (export first if needed).")) return;
+    gameLibrary = [];
+    renderLibrary();
+});
+
+/* SHADER-STYLE BACKGROUND (G5 ONLY) */
+const shaderCanvas = document.getElementById("bgShaderCanvas");
+const shaderCtx = shaderCanvas.getContext("2d");
+let shaderWidth = 320;
+let shaderHeight = 180;
+let shaderAnimationId = null;
+let shaderLastTime = 0;
+
+const shaderBlobs = [
+    { x: 0.2, y: 0.3, r: 0.4, color: [255, 75, 129] },
+    { x: 0.8, y: 0.4, r: 0.5, color: [125, 249, 255] },
+    { x: 0.5, y: 0.8, r: 0.6, color: [124, 255, 107] }
+];
+
+function resizeShaderCanvas() {
+    shaderCanvas.width = shaderWidth;
+    shaderCanvas.height = shaderHeight;
+}
+
+function drawShaderBackground(time) {
+    const theme = document.body.getAttribute("data-theme");
+    if (theme !== "gamer") {
+        shaderCtx.clearRect(0, 0, shaderWidth, shaderHeight);
+        shaderAnimationId = requestAnimationFrame(drawShaderBackground);
+        return;
+    }
+
+    const dt = (time - shaderLastTime) / 1000 || 0;
+    shaderLastTime = time;
+
+    shaderCtx.clearRect(0, 0, shaderWidth, shaderHeight);
+    shaderCtx.fillStyle = "#050509";
+    shaderCtx.fillRect(0, 0, shaderWidth, shaderHeight);
+
+    shaderBlobs.forEach((blob, index) => {
+        const speed = 0.05 + index * 0.02;
+        blob.x += Math.sin(time * 0.0001 + index) * speed * dt;
+        blob.y += Math.cos(time * 0.00012 + index * 2) * speed * dt;
+
+        if (blob.x < -0.2) blob.x = 1.2;
+        if (blob.x > 1.2) blob.x = -0.2;
+        if (blob.y < -0.2) blob.y = 1.2;
+        if (blob.y > 1.2) blob.y = -0.2;
+
+        const cx = blob.x * shaderWidth;
+        const cy = blob.y * shaderHeight;
+        const radius = blob.r * Math.max(shaderWidth, shaderHeight);
+
+        const grad = shaderCtx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+        const [r, g, b] = blob.color;
+        grad.addColorStop(0, `rgba(${r},${g},${b},0.9)`);
+        grad.addColorStop(0.4, `rgba(${r},${g},${b},0.4)`);
+        grad.addColorStop(1, "rgba(0,0,0,0)");
+
+        shaderCtx.globalCompositeOperation = "screen";
+        shaderCtx.fillStyle = grad;
+        shaderCtx.fillRect(0, 0, shaderWidth, shaderHeight);
+        shaderCtx.globalCompositeOperation = "source-over";
+    });
+
+    shaderAnimationId = requestAnimationFrame(drawShaderBackground);
+}
+
+function startShaderBackground() {
+    resizeShaderCanvas();
+    if (shaderAnimationId) cancelAnimationFrame(shaderAnimationId);
+    shaderAnimationId = requestAnimationFrame(drawShaderBackground);
+}
+
+startShaderBackground();
+
 /* GHOST SIGNATURE FUNCTION */
 function __madocSignature() {
     // This function is intentionally unused.
@@ -974,5 +1539,3 @@ function __madocSignature() {
 </script>
 </body>
 </html>
-
-
