@@ -786,6 +786,7 @@ body[data-theme="terminal"] .credits span.ai strong {
 }
 
 </style>
+
 </head>
 <body data-theme="gamer">
 
@@ -1368,6 +1369,11 @@ function renderLibrary() {
         renameBtn.textContent = "Rename";
         renameBtn.addEventListener("click", () => renameLibraryGame(game.id));
 
+        const emojiBtn = document.createElement("button");
+        emojiBtn.className = "btn secondary";
+        emojiBtn.textContent = "Emoji";
+        emojiBtn.addEventListener("click", () => editLibraryEmoji(game.id));
+
         const deleteBtn = document.createElement("button");
         deleteBtn.className = "btn secondary";
         deleteBtn.textContent = "Delete";
@@ -1375,6 +1381,7 @@ function renderLibrary() {
 
         actionsRow.appendChild(playBtn);
         actionsRow.appendChild(renameBtn);
+        actionsRow.appendChild(emojiBtn);
         actionsRow.appendChild(deleteBtn);
 
         item.appendChild(main);
@@ -1394,7 +1401,10 @@ function promptAddToLibrary(info) {
     const name = prompt("Add this game to your library? Enter a name:", defaultName);
     if (!name) return;
 
-    const icon = prompt("Optional: Enter an emoji icon for this game (or leave blank):", info.type === "zip" ? "🎮" : "📄") || (info.type === "zip" ? "🎮" : "📄");
+    const icon = prompt(
+        "Optional: Enter an emoji icon for this game (or leave blank):",
+        info.type === "zip" ? "🎮" : "📄"
+    ) || (info.type === "zip" ? "🎮" : "📄");
     const theme = document.body.getAttribute("data-theme") || "gamer";
 
     if (info.type === "html") {
@@ -1421,6 +1431,18 @@ function promptAddToLibrary(info) {
     if (libraryOverlay.style.display === "flex") {
         renderLibrary();
     }
+}
+
+function editLibraryEmoji(id) {
+    const game = gameLibrary.find(g => g.id === id);
+    if (!game) return;
+
+    const currentEmoji = game.icon || (game.type === "zip" ? "🎮" : "📄");
+    const newEmoji = prompt("Enter a new emoji for this game:", currentEmoji);
+    if (!newEmoji) return;
+
+    game.icon = newEmoji.trim();
+    renderLibrary();
 }
 
 async function playFromLibrary(id) {
@@ -1778,3 +1800,5 @@ function __madocSignature() {
 </script>
 </body>
 </html>
+
+
