@@ -1,0 +1,1871 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Game Loader Pro 2026 — Data URL Edition</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        /* =========================================================
+           VARIABLES
+           ========================================================= */
+        :root {
+            --accent-1: #ff4b81;
+            --accent-2: #7df9ff;
+            --accent-3: #7cff6b;
+            --bg-dark: #050509;
+            --panel-bg: #101018;
+            --text-main: #f5f5f7;
+            --text-muted: #a0a0b5;
+            --border-subtle: #26263a;
+            --radius-lg: 14px;
+            --radius-md: 10px;
+            --radius-sm: 6px;
+            --shadow-soft: 0 18px 40px rgba(0,0,0,0.6);
+            --transition-fast: 0.18s ease-out;
+        }
+
+        /* =========================================================
+           GLOBAL RESETS & BASE LAYOUT
+           ========================================================= */
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 18px;
+            transition: background 0.25s ease, color 0.25s ease;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        #bgShaderCanvas {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            width: 100%;
+            height: 100%;
+            filter: blur(26px);
+            opacity: 0.9;
+            pointer-events: none;
+        }
+
+        /* =========================================================
+           TYPOGRAPHY
+           ========================================================= */
+        h1 {
+            margin: 10px 0 4px;
+            font-size: 22px;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .subtitle {
+            margin: 0 0 14px;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        /* =========================================================
+           LAYOUT CONTAINERS
+           ========================================================= */
+        .top-bar {
+            width: 100%;
+            max-width: 980px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .brand-chip {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--text-muted);
+            opacity: 0.9;
+        }
+
+        .top-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .controls-row {
+            width: 100%;
+            max-width: 980px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .credits {
+            width: 100%;
+            max-width: 980px;
+            margin-top: 10px;
+            font-size: 11px;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .credits span strong {
+            color: var(--accent-1);
+        }
+
+        .credits span.ai strong {
+            color: var(--accent-2);
+        }
+
+        .credits .tag {
+            opacity: 0.8;
+        }
+
+        /* =========================================================
+           BUTTONS & INTERACTIVE ELEMENTS
+           ========================================================= */
+
+        /* Shared button base */
+        .btn,
+        .settings-btn,
+        .icon-btn,
+        .file-input-label {
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-main);
+            font-size: 13px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            transition:
+                background var(--transition-fast),
+                transform var(--transition-fast),
+                box-shadow var(--transition-fast),
+                border-color var(--transition-fast),
+                filter var(--transition-fast),
+                opacity var(--transition-fast);
+        }
+
+        /* Primary button */
+        .btn {
+            background: linear-gradient(135deg, rgba(255,75,129,0.9), rgba(124,255,107,0.9));
+            color: #050509;
+            font-weight: 600;
+            padding: 8px 14px;
+            box-shadow: 0 14px 30px rgba(0,0,0,0.7);
+        }
+
+        .btn.secondary {
+            background: radial-gradient(circle at 0% 0%, rgba(125,249,255,0.18), rgba(10,10,20,0.96));
+            color: var(--text-main);
+            border-color: rgba(120,120,200,0.6);
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: default;
+            box-shadow: none;
+        }
+
+        .btn:not(:disabled):hover {
+            transform: translateY(-1px);
+            box-shadow: 0 18px 40px rgba(0,0,0,0.85);
+            filter: brightness(1.05);
+        }
+
+        .btn:not(:disabled):active {
+            transform: translateY(0);
+            box-shadow: 0 10px 24px rgba(0,0,0,0.7);
+        }
+
+        /* Settings + Icon buttons */
+        .settings-btn,
+        .icon-btn {
+            background: rgba(10,10,20,0.9);
+            padding: 6px 10px;
+            box-shadow: 0 0 0 1px rgba(0,0,0,0.6);
+            border-color: rgba(120,120,200,0.5);
+        }
+
+        .settings-btn:hover,
+        .icon-btn:hover {
+            background: radial-gradient(circle at 0% 0%, rgba(255,75,129,0.25), rgba(10,10,20,0.95));
+            transform: translateY(-1px);
+            border-color: rgba(180,180,255,0.8);
+            box-shadow: 0 0 18px rgba(124,255,107,0.25);
+        }
+
+        .settings-btn:active,
+        .icon-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 0 10px rgba(124,255,107,0.15);
+        }
+
+        /* File input label */
+        .file-input-label {
+            position: relative;
+            overflow: hidden;
+            padding: 8px 14px;
+            background: radial-gradient(circle at 0% 0%, rgba(124,255,107,0.12), rgba(10,10,20,0.95));
+            box-shadow: var(--shadow-soft);
+        }
+
+        .file-input-label:hover {
+            transform: translateY(-1px);
+            border-color: rgba(124,255,107,0.8);
+            box-shadow: 0 20px 45px rgba(0,0,0,0.75);
+            background: radial-gradient(circle at 0% 0%, rgba(124,255,107,0.2), rgba(10,10,20,0.98));
+        }
+
+        .file-input-label small {
+            display: block;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        /* =========================================================
+           GAME CONTAINER & LOADER UI
+           ========================================================= */
+
+        #gameContainer {
+            width: 100%;
+            max-width: 980px;
+            height: 600px;
+            border-radius: var(--radius-lg);
+            background: radial-gradient(circle at 50% 0%, rgba(255,75,129,0.18), rgba(5,5,9,1));
+            border: 1px solid rgba(80,80,140,0.7);
+            box-shadow:
+                0 26px 60px rgba(0,0,0,0.9),
+                0 0 40px rgba(124,255,107,0.18),
+                0 0 40px rgba(125,249,255,0.18);
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            align-items: stretch;
+            justify-content: stretch;
+        }
+
+        #gameContainer::before {
+            content: "";
+            position: absolute;
+            inset: -40px;
+            background:
+                radial-gradient(circle at 0% 100%, rgba(255,75,129,0.18), transparent 55%),
+                radial-gradient(circle at 100% 0%, rgba(125,249,255,0.18), transparent 55%),
+                radial-gradient(circle at 50% 100%, rgba(124,255,107,0.16), transparent 60%);
+            opacity: 0.9;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: black;
+            position: relative;
+            z-index: 1;
+        }
+
+        #overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-size: 14px;
+            z-index: 2;
+            pointer-events: none;
+            text-shadow: 0 0 12px rgba(0,0,0,0.8);
+        }
+
+        #overlay span {
+            padding: 8px 14px;
+            border-radius: 999px;
+            border: 1px dashed rgba(160,160,220,0.7);
+            background: rgba(5,5,9,0.85);
+        }
+
+        #loaderUI {
+            position: absolute;
+            inset: 0;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at 50% 0%, rgba(0,0,0,0.2), rgba(0,0,0,0.85));
+            color: #fff;
+            font-size: 14px;
+            z-index: 3;
+        }
+
+        .spinner {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            border: 4px solid rgba(120,120,160,0.7);
+            border-top-color: var(--accent-1);
+            border-right-color: var(--accent-2);
+            border-bottom-color: var(--accent-3);
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 16px;
+            box-shadow: 0 0 18px rgba(0,0,0,0.8);
+        }
+
+        #zipProgressContainer {
+            width: 70%;
+            background: rgba(10,10,20,0.9);
+            border-radius: 999px;
+            overflow: hidden;
+            border: 1px solid rgba(120,120,200,0.7);
+            box-shadow: 0 0 18px rgba(0,0,0,0.8);
+        }
+
+        #zipProgressBar {
+            height: 10px;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent-1), var(--accent-2), var(--accent-3));
+            transition: width 0.15s ease-out;
+        }
+
+        #loaderText {
+            margin-top: 10px;
+            font-size: 13px;
+            color: var(--text-main);
+        }
+
+        /* =========================================================
+           PANELS (SETTINGS + LIBRARY)
+           ========================================================= */
+
+        .settings-overlay,
+        .library-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            backdrop-filter: blur(8px);
+        }
+
+        .settings-panel,
+        .library-panel {
+            background: rgba(10,10,20,0.98);
+            border-radius: var(--radius-lg);
+            border: 1px solid rgba(120,120,200,0.7);
+            box-shadow: 0 26px 60px rgba(0,0,0,0.9);
+            padding: 16px 16px 14px;
+            position: relative;
+            color: var(--text-main);
+        }
+
+        .settings-panel {
+            width: 280px;
+        }
+
+        .library-panel {
+            width: 600px;
+            max-height: 80vh;
+            background: rgba(10,10,25,0.78);
+            backdrop-filter: blur(16px);
+            border-color: rgba(180,180,255,0.8);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .settings-panel h2,
+        .library-panel h2 {
+            margin: 0 0 4px;
+            font-size: 16px;
+        }
+
+        .settings-panel p.sub,
+        .library-panel p.sub {
+            margin: 0 0 10px;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .settings-panel label {
+            display: block;
+            font-size: 12px;
+            margin-top: 10px;
+            margin-bottom: 4px;
+        }
+
+        .settings-panel select {
+            width: 100%;
+            padding: 6px 8px;
+            border-radius: var(--radius-sm);
+            border: 1px solid rgba(120,120,200,0.7);
+            background: rgba(5,5,12,0.95);
+            color: var(--text-main);
+            font-size: 12px;
+        }
+
+        .settings-panel .toggle-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+
+        .settings-panel .toggle-row input[type="checkbox"] {
+            transform: scale(1.05);
+        }
+
+        .settings-panel .section-title {
+            margin-top: 14px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--text-muted);
+        }
+
+        .settings-panel .btn {
+            width: 100%;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            border-radius: 999px;
+            border: 1px solid rgba(120,120,200,0.7);
+            background: rgba(5,5,12,0.95);
+            color: var(--text-main);
+            font-size: 11px;
+            padding: 2px 7px;
+            cursor: pointer;
+        }
+
+        /* Library panel internals */
+
+        .library-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .library-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .library-actions .btn {
+            font-size: 11px;
+            padding: 6px 10px;
+        }
+
+        .library-list {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 4px;
+            margin-bottom: 10px;
+        }
+
+        .library-empty {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .library-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 8px 10px;
+            border-radius: var(--radius-md);
+            background: radial-gradient(circle at 0% 0%, rgba(124,255,107,0.08), rgba(10,10,25,0.9));
+            border: 1px solid rgba(120,120,200,0.6);
+            box-shadow: 0 10px 24px rgba(0,0,0,0.6);
+            margin-bottom: 8px;
+            transition:
+                transform var(--transition-fast),
+                box-shadow var(--transition-fast),
+                border-color var(--transition-fast),
+                background var(--transition-fast);
+        }
+
+        .library-item:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 16px 32px rgba(0,0,0,0.8);
+            border-color: rgba(180,180,255,0.9);
+            background: radial-gradient(circle at 0% 0%, rgba(124,255,107,0.14), rgba(10,10,25,0.96));
+        }
+
+        .library-main {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+
+        .library-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            background: radial-gradient(circle at 30% 0%, rgba(255,75,129,0.7), rgba(10,10,25,1));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .library-text {
+            min-width: 0;
+        }
+
+        .library-name {
+            font-size: 13px;
+            font-weight: 600;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+
+        .library-meta {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .library-meta span {
+            margin-right: 6px;
+        }
+
+        .library-actions-row {
+            display: flex;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
+        .library-actions-row .btn {
+            font-size: 11px;
+            padding: 5px 8px;
+            box-shadow: none;
+        }
+
+        .library-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .library-footer .btn {
+            font-size: 11px;
+            padding: 5px 10px;
+        }
+
+        /* =========================================================
+           ANIMATIONS
+           ========================================================= */
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* =========================================================
+           THEME PACKS
+           ========================================================= */
+
+        /* -------------------------
+           GAMER THEME
+           ------------------------- */
+        body[data-theme="gamer"] {
+            background: radial-gradient(circle at 0% 0%, #050509, #020207);
+            color: var(--text-main);
+        }
+
+        body[data-theme="gamer"] #gameContainer {
+            background: radial-gradient(circle at 50% 0%, rgba(255,75,129,0.18), rgba(5,5,9,1));
+            box-shadow:
+                0 26px 60px rgba(0,0,0,0.9),
+                0 0 40px rgba(124,255,107,0.18),
+                0 0 40px rgba(125,249,255,0.18);
+        }
+
+        /* -------------------------
+           MINIMAL THEME
+           ------------------------- */
+        body[data-theme="minimal"] {
+            background: #f3f3f6;
+            color: #111;
+        }
+
+        body[data-theme="minimal"] .settings-panel,
+        body[data-theme="minimal"] #gameContainer,
+        body[data-theme="minimal"] .library-panel {
+            background: #ffffff;
+            border-color: #d0d0dd;
+            box-shadow: 0 18px 40px rgba(0,0,0,0.08);
+        }
+
+        body[data-theme="minimal"] .file-input-label,
+        body[data-theme="minimal"] .btn.secondary,
+        body[data-theme="minimal"] .icon-btn,
+        body[data-theme="minimal"] .settings-btn {
+            background: #ffffff;
+            border-color: #d0d0dd;
+            color: #111;
+            box-shadow: 0 10px 24px rgba(0,0,0,0.06);
+        }
+
+        body[data-theme="minimal"] .btn {
+            background: #111;
+            color: #f5f5f7;
+            box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+        }
+
+        body[data-theme="minimal"] .credits span strong {
+            color: #111;
+        }
+
+        body[data-theme="minimal"] .credits span.ai strong {
+            color: #444;
+        }
+
+        /* -------------------------
+           NEON THEME
+           ------------------------- */
+        body[data-theme="neon"] {
+            background: radial-gradient(circle at 0% 0%, #050010, #02000a);
+            color: #fdfdff;
+        }
+
+        body[data-theme="neon"] #gameContainer {
+            background: radial-gradient(circle at 50% 0%, rgba(255,75,129,0.3), rgba(10,0,30,1));
+            border-color: rgba(255,75,129,0.8);
+            box-shadow:
+                0 26px 60px rgba(0,0,0,0.9),
+                0 0 40px rgba(255,75,129,0.4),
+                0 0 40px rgba(125,249,255,0.4);
+        }
+
+        body[data-theme="neon"] .settings-panel,
+        body[data-theme="neon"] .library-panel {
+            background: rgba(10,0,30,0.98);
+            border-color: rgba(125,249,255,0.8);
+        }
+
+        body[data-theme="neon"] .credits span strong {
+            color: #ff4bff;
+            text-shadow: 0 0 6px rgba(255,75,255,0.8);
+        }
+
+        body[data-theme="neon"] .credits span.ai strong {
+            color: #7df9ff;
+            text-shadow: 0 0 6px rgba(125,249,255,0.8);
+        }
+
+        /* -------------------------
+           GLASS THEME
+           ------------------------- */
+        body[data-theme="glass"] {
+            background: linear-gradient(135deg, #0b1020, #151a2a);
+            color: #f5f5f7;
+        }
+
+        body[data-theme="glass"] #gameContainer,
+        body[data-theme="glass"] .settings-panel,
+        body[data-theme="glass"] .library-panel {
+            background: rgba(10,10,25,0.7);
+            border-color: rgba(180,180,255,0.7);
+            backdrop-filter: blur(14px);
+            box-shadow: 0 26px 60px rgba(0,0,0,0.9);
+        }
+
+        body[data-theme="glass"] .file-input-label,
+        body[data-theme="glass"] .btn.secondary,
+        body[data-theme="glass"] .icon-btn,
+        body[data-theme="glass"] .settings-btn {
+            background: rgba(15,15,35,0.7);
+            border-color: rgba(180,180,255,0.7);
+        }
+
+        /* -------------------------
+           TERMINAL THEME
+           ------------------------- */
+        body[data-theme="terminal"] {
+            background: #020503;
+            color: #d0ffd0;
+            font-family: "Fira Code", "Cascadia Code", monospace;
+        }
+
+        body[data-theme="terminal"] #gameContainer,
+        body[data-theme="terminal"] .settings-panel,
+        body[data-theme="terminal"] .library-panel {
+            background: #020503;
+            border-color: #0f3f1a;
+            box-shadow: 0 0 24px rgba(0,255,0,0.2);
+        }
+
+        body[data-theme="terminal"] .file-input-label,
+        body[data-theme="terminal"] .btn.secondary,
+        body[data-theme="terminal"] .icon-btn,
+        body[data-theme="terminal"] .settings-btn {
+            background: #020503;
+            border-color: #0f3f1a;
+            color: #d0ffd0;
+        }
+
+        body[data-theme="terminal"] .btn {
+            background: #0f3f1a;
+            color: #d0ffd0;
+            border-color: #1f7f3a;
+        }
+
+        body[data-theme="terminal"] .credits span strong,
+        body[data-theme="terminal"] .credits span.ai strong {
+            color: #7cff6b;
+        }
+
+        /* =========================================================
+           RESPONSIVE RULES
+           ========================================================= */
+
+        @media (max-width: 900px) {
+            #gameContainer {
+                height: 420px;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .controls-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .controls-row .btn,
+            .file-input-label {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .credits {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .library-panel {
+                width: 90%;
+            }
+        }
+    </style>
+<body>
+
+    <canvas id="bgShaderCanvas"></canvas>
+
+    <!-- =========================================================
+         TOP BAR
+         ========================================================= -->
+    <div class="top-bar">
+        <div class="brand-chip">Game Loader Pro 2026</div>
+        <div class="top-actions">
+            <button id="settingsBtn" class="settings-btn">Settings</button>
+            <button id="libraryBtn" class="settings-btn">Library</button>
+        </div>
+    </div>
+
+    <h1>Game Loader Pro — Data URL Edition</h1>
+    <div class="subtitle">Load HTML or ZIP‑based games with full asset rewriting, persistence, and animated themes.</div>
+
+    <!-- =========================================================
+         CONTROLS ROW
+         ========================================================= -->
+    <div class="controls-row">
+        <label for="fileInput" class="file-input-label">
+            Load HTML File
+            <small>Single‑file games</small>
+        </label>
+        <input type="file" id="fileInput" accept=".html">
+
+        <button id="loadZipBtn" class="btn secondary">Load ZIP Game</button>
+        <input type="file" id="zipInput" accept=".zip" style="display:none">
+
+        <button id="fullscreenBtn" class="btn secondary" disabled>Fullscreen</button>
+        <button id="launchTabBtn" class="btn secondary" disabled>Open in New Tab</button>
+        <button id="openLoaderTabBtn" class="btn secondary">Open Loader in New Tab</button>
+    </div>
+
+    <!-- =========================================================
+         GAME CONTAINER
+         ========================================================= -->
+    <div id="gameContainer">
+        <iframe id="frame" src="about:blank"></iframe>
+
+        <div id="overlay">
+            <span>Load a game to begin</span>
+        </div>
+
+        <div id="loaderUI">
+            <div class="spinner"></div>
+            <div id="zipProgressContainer">
+                <div id="zipProgressBar"></div>
+            </div>
+            <div id="loaderText">Loading…</div>
+        </div>
+    </div>
+
+    <!-- =========================================================
+         CREDITS
+         ========================================================= -->
+    <div class="credits">
+        <span><strong>Madoc Treasure</strong> — Original Creator</span>
+        <span class="ai"><strong>Copilot</strong> — Engine Collaboration</span>
+        <span class="tag">Fingerprint: MTP‑GLP‑CORE‑7F92A1</span>
+    </div>
+
+    <!-- =========================================================
+         SETTINGS OVERLAY
+         ========================================================= -->
+    <div id="settingsOverlay" class="settings-overlay">
+        <div class="settings-panel">
+            <button id="closeSettings" class="close-btn">✕</button>
+            <h2>Settings</h2>
+            <p class="sub">Customize your loader experience</p>
+
+            <label for="themeSelect">Theme</label>
+            <select id="themeSelect">
+                <option value="gamer">Gamer</option>
+                <option value="neon">Neon</option>
+                <option value="terminal">Terminal</option>
+                <option value="glass">Glass</option>
+                <option value="minimal">Minimal</option>
+            </select>
+
+            <div class="toggle-row">
+                <input type="checkbox" id="panicToggle">
+                <label for="panicToggle">Enable Panic Key (Ctrl+0)</label>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================================
+         LIBRARY OVERLAY
+         ========================================================= -->
+    <div id="libraryOverlay" class="library-overlay">
+        <div class="library-panel">
+            <button id="closeLibrary" class="close-btn">✕</button>
+
+            <div class="library-header">
+                <h2>Your Library</h2>
+                <div class="library-actions">
+                    <button id="importPackBtn" class="btn secondary">Import</button>
+                    <button id="exportPackBtn" class="btn secondary">Export</button>
+                    <button id="resetLibraryBtn" class="btn secondary">Reset</button>
+                </div>
+            </div>
+
+            <p class="sub">Saved HTML and ZIP games</p>
+
+            <div id="libraryList" class="library-list"></div>
+            <div id="libraryEmpty" class="library-empty">Your library is empty.</div>
+
+            <div class="library-footer">
+                <span>Stored in memory only</span>
+            </div>
+
+            <input type="file" id="importPackInput" accept=".gamepack" style="display:none">
+        </div>
+    </div>
+
+    <!-- =========================================================
+         JSZIP
+         ========================================================= -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+    <!-- =========================================================
+         MAIN SCRIPT
+         ========================================================= -->
+    <script>
+        /* =========================================================
+           CORE ELEMENTS
+           ========================================================= */
+        const fileInput = document.getElementById("fileInput");
+        const frame = document.getElementById("frame");
+        const overlay = document.getElementById("overlay");
+        const fullscreenBtn = document.getElementById("fullscreenBtn");
+        const launchTabBtn = document.getElementById("launchTabBtn");
+        const loaderUI = document.getElementById("loaderUI");
+        const loaderText = document.getElementById("loaderText");
+        const zipProgressContainer = document.getElementById("zipProgressContainer");
+        const zipProgressBar = document.getElementById("zipProgressBar");
+
+        const settingsBtn = document.getElementById("settingsBtn");
+        const settingsOverlay = document.getElementById("settingsOverlay");
+        const closeSettings = document.getElementById("closeSettings");
+        const themeSelect = document.getElementById("themeSelect");
+        const openLoaderTabBtn = document.getElementById("openLoaderTabBtn");
+        const panicToggle = document.getElementById("panicToggle");
+
+        const libraryBtn = document.getElementById("libraryBtn");
+        const libraryOverlay = document.getElementById("libraryOverlay");
+        const closeLibrary = document.getElementById("closeLibrary");
+        const libraryList = document.getElementById("libraryList");
+        const libraryEmpty = document.getElementById("libraryEmpty");
+        const importPackBtn = document.getElementById("importPackBtn");
+        const exportPackBtn = document.getElementById("exportPackBtn");
+        const importPackInput = document.getElementById("importPackInput");
+        const resetLibraryBtn = document.getElementById("resetLibraryBtn");
+
+        let currentBlobURL = null;
+        let zipVirtualFS = {};
+        let zipMainHtmlBlobUrl = null;
+        let loadTimeout = null;
+        let panicEnabled = false;
+
+        /* LIBRARY DATA (IN-MEMORY) */
+        let gameLibrary = []; // array of {id,name,type,icon,theme,htmlData?,zipData?}
+
+        /* =========================================================
+           LOADER UI
+           ========================================================= */
+        function showLoader(message) {
+            loaderText.textContent = message || "Loading…";
+            loaderUI.style.display = "flex";
+            zipProgressContainer.style.display = "none";
+            zipProgressBar.style.width = "0%";
+        }
+
+        function showZipProgress() {
+            loaderText.textContent = "Extracting ZIP…";
+            loaderUI.style.display = "flex";
+            zipProgressContainer.style.display = "block";
+            zipProgressBar.style.width = "0%";
+        }
+
+        function updateZipProgress(percent) {
+            zipProgressBar.style.width = percent + "%";
+        }
+
+        function hideLoader() {
+            loaderUI.style.display = "none";
+        }
+
+        /* =========================================================
+           TIMEOUT FAILSAFE
+           ========================================================= */
+        function startLoadTimeout() {
+            if (loadTimeout) clearTimeout(loadTimeout);
+            loadTimeout = setTimeout(() => {
+                alert("This file has not loaded properly. Make sure you're using the right file or valid code.");
+                overlay.style.display = "flex";
+                overlay.textContent = "";
+                const span = document.createElement("span");
+                span.textContent = "Load a game to begin";
+                overlay.appendChild(span);
+                frame.src = "about:blank";
+                fullscreenBtn.disabled = true;
+                launchTabBtn.disabled = true;
+                hideLoader();
+            }, 3 * 60 * 1000);
+        }
+
+        frame.addEventListener("load", () => {
+            if (loadTimeout) {
+                clearTimeout(loadTimeout);
+                loadTimeout = null;
+            }
+            hideLoader();
+        });
+
+        /* =========================================================
+           SINGLE-FILE HTML LOADING
+           ========================================================= */
+        function loadGame(htmlText, fromLibrary = false) {
+            if (currentBlobURL) URL.revokeObjectURL(currentBlobURL);
+            const blob = new Blob([htmlText], { type: "text/html" });
+            currentBlobURL = URL.createObjectURL(blob);
+            showLoader("Loading HTML file…");
+            frame.src = currentBlobURL;
+            overlay.style.display = "none";
+            fullscreenBtn.disabled = false;
+            launchTabBtn.disabled = false;
+            startLoadTimeout();
+
+            if (!fromLibrary) {
+                promptAddToLibrary({
+                    type: "html",
+                    rawHtml: htmlText
+                });
+            }
+        }
+
+        fileInput.addEventListener("change", e => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = ev => loadGame(ev.target.result);
+            reader.readAsText(file);
+        });
+
+        /* =========================================================
+           DRAG & DROP
+           ========================================================= */
+        document.addEventListener("dragover", e => e.preventDefault());
+        document.addEventListener("drop", e => {
+            e.preventDefault();
+            const file = e.dataTransfer.files[0];
+            if (!file || !file.name.toLowerCase().endsWith(".html")) return;
+            const reader = new FileReader();
+            reader.onload = ev => loadGame(ev.target.result);
+            reader.readAsText(file);
+        });
+
+        /* =========================================================
+           ZIP VIRTUAL FILESYSTEM + PATH UTILITIES
+           ========================================================= */
+        function normalizeZipPath(path) {
+            // Engine Fingerprint — Do Not Modify
+            // MADOC-FP: 7F-92A1-CORE-ORIGIN
+            return path.replace(/\\/g, "/").replace(/^\.\/+/, "");
+        }
+
+        function resolveRelativePath(basePath, relativePath) {
+            basePath = normalizeZipPath(basePath);
+            relativePath = normalizeZipPath(relativePath);
+
+            const lastSlash = basePath.lastIndexOf("/");
+            let baseDir = lastSlash === -1 ? "" : basePath.slice(0, lastSlash + 1);
+
+            if (relativePath.startsWith("/")) {
+                return relativePath.slice(1);
+            }
+
+            const stack = baseDir.split("/").filter(Boolean);
+            const parts = relativePath.split("/");
+
+            for (let i = 0; i < parts.length; i++) {
+                const part = parts[i];
+                if (!part || part === ".") continue;
+                if (part === "..") stack.pop();
+                else stack.push(part);
+            }
+
+            return stack.join("/");
+        }
+
+        function isDataOrHttpUrl(u) {
+            return /^(data:|https?:|blob:)/i.test(u);
+        }
+
+        function rewriteHtmlAssetPaths(htmlText, htmlPath) {
+            htmlText = htmlText.replace(
+                /(src|href)\s*=\s*("([^"]+)"|'([^']+)'|([^>\s"']+))/gi,
+                function(match, attr, full, dq, sq, bare) {
+                    const original = dq || sq || bare || "";
+                    const trimmed = original.trim();
+                    if (!trimmed || isDataOrHttpUrl(trimmed) || trimmed.startsWith("#")) {
+                        return match;
+                    }
+                    const resolved = resolveRelativePath(htmlPath, trimmed);
+                    const blobUrl = zipVirtualFS[resolved];
+                    if (!blobUrl) return match;
+                    const quote = dq ? "\"" : sq ? "'" : "\"";
+                    return attr + "=" + quote + blobUrl + quote;
+                }
+            );
+
+            htmlText = htmlText.replace(
+                /url\(\s*(['"]?)([^'")]+)\1\s*\)/gi,
+                function(match, quote, urlPath) {
+                    const trimmed = urlPath.trim();
+                    if (!trimmed || isDataOrHttpUrl(trimmed) || trimmed.startsWith("#")) {
+                        return match;
+                    }
+                    const resolved = resolveRelativePath(htmlPath, trimmed);
+                    const blobUrl = zipVirtualFS[resolved];
+                    if (!blobUrl) return match;
+                    return "url(\"" + blobUrl + "\")";
+                }
+            );
+
+            return htmlText;
+        }
+
+        /* =========================================================
+           HELPERS: BLOB → DATA URL
+           ========================================================= */
+        function blobToDataURL(blob) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = e => resolve(e.target.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
+        }
+
+        /* =========================================================
+           ZIP LOADER ENGINE WITH PERSISTENCE
+           ========================================================= */
+        async function loadZipGameFromFile(file, fromLibrary = false, existingZipData = null) {
+            if (fromLibrary && existingZipData) {
+                zipVirtualFS = {};
+                const assets = existingZipData.assets || {};
+                for (const path in assets) {
+                    const dataUrl = assets[path];
+                    const blob = await (await fetch(dataUrl)).blob();
+                    const url = URL.createObjectURL(blob);
+                    zipVirtualFS[path] = url;
+                }
+                const mainHtmlDataUrl = existingZipData.mainHtml;
+                const mainHtmlBlob = await (await fetch(mainHtmlDataUrl)).blob();
+                const mainHtmlText = await mainHtmlBlob.text();
+                const htmlBlob = new Blob([mainHtmlText], { type: "text/html" });
+                zipMainHtmlBlobUrl = URL.createObjectURL(htmlBlob);
+                currentBlobURL = zipMainHtmlBlobUrl;
+                return zipMainHtmlBlobUrl;
+            }
+
+            const arrayBuffer = await file.arrayBuffer();
+            const zip = await JSZip.loadAsync(arrayBuffer);
+
+            const fileEntries = [];
+            zip.forEach(function(path, entry) {
+                if (!entry.dir) fileEntries.push({ path: path, entry: entry });
+            });
+
+            const htmlFiles = [];
+            for (let i = 0; i < fileEntries.length; i++) {
+                const f = fileEntries[i];
+                if (f.path.toLowerCase().endsWith(".html")) {
+                    const content = await f.entry.async("string");
+                    htmlFiles.push({
+                        path: f.path,
+                        content: content,
+                        size: content.length
+                    });
+                }
+            }
+
+            if (htmlFiles.length === 0) {
+                throw new Error("No HTML files found in ZIP.");
+            }
+
+            htmlFiles.sort(function(a, b) { return b.size - a.size; });
+            const mainHtml = htmlFiles[0];
+
+            zipVirtualFS = {};
+            const assetsData = {};
+
+            for (let i = 0; i < fileEntries.length; i++) {
+                const f = fileEntries[i];
+                if (f.path.toLowerCase().endsWith(".html")) continue;
+
+                const blob = await f.entry.async("blob", {
+                    onProgress: function(meta) {
+                        const percent = Math.floor(meta.percent || 0);
+                        updateZipProgress(percent);
+                    }
+                });
+
+                const normalized = normalizeZipPath(f.path);
+                const url = URL.createObjectURL(blob);
+                zipVirtualFS[normalized] = url;
+
+                const dataUrl = await blobToDataURL(blob);
+                assetsData[normalized] = dataUrl;
+            }
+
+            const rewrittenHtml = rewriteHtmlAssetPaths(mainHtml.content, mainHtml.path);
+            const htmlBlob = new Blob([rewrittenHtml], { type: "text/html" });
+            zipMainHtmlBlobUrl = URL.createObjectURL(htmlBlob);
+            currentBlobURL = zipMainHtmlBlobUrl;
+
+            const mainHtmlDataUrl = await blobToDataURL(new Blob([rewrittenHtml], { type: "text/html" }));
+
+            if (!fromLibrary) {
+                promptAddToLibrary({
+                    type: "zip",
+                    zipData: {
+                        mainHtml: mainHtmlDataUrl,
+                        assets: assetsData
+                    },
+                    filename: file.name
+                });
+            }
+
+            return zipMainHtmlBlobUrl;
+        }
+        /* =========================================================
+           ZIP INTEGRATION
+           ========================================================= */
+        const loadZipBtn = document.getElementById("loadZipBtn");
+        const zipInput = document.getElementById("zipInput");
+
+        loadZipBtn.addEventListener("click", function() {
+            zipInput.value = "";
+            zipInput.click();
+        });
+
+        zipInput.addEventListener("change", async function() {
+            const file = zipInput.files[0];
+            if (!file) return;
+            showZipProgress();
+            startLoadTimeout();
+            try {
+                const blobUrl = await loadZipGameFromFile(file);
+                frame.src = blobUrl;
+                overlay.style.display = "none";
+                fullscreenBtn.disabled = false;
+                launchTabBtn.disabled = false;
+            } catch (err) {
+                console.error(err);
+                alert("Failed to load ZIP file.");
+                hideLoader();
+            }
+        });
+
+        /* =========================================================
+           FULLSCREEN
+           ========================================================= */
+        fullscreenBtn.addEventListener("click", function() {
+            const container = document.getElementById("gameContainer");
+            if (container.requestFullscreen) container.requestFullscreen();
+        });
+
+        /* =========================================================
+           OPEN GAME IN NEW TAB (PATCHED)
+           ========================================================= */
+        launchTabBtn.addEventListener("click", function() {
+            const url = zipMainHtmlBlobUrl || currentBlobURL;
+            if (!url) return;
+
+            fetch(url)
+                .then(res => res.text())
+                .then(html => {
+                    const newTab = window.open("about:blank");
+                    if (!newTab) return;
+                    newTab.document.open();
+                    newTab.document.write(html);
+                    newTab.document.close();
+                });
+        });
+
+        /* =========================================================
+           SETTINGS PANEL
+           ========================================================= */
+        settingsBtn.addEventListener("click", function() {
+            settingsOverlay.style.display = "flex";
+        });
+
+        closeSettings.addEventListener("click", function() {
+            settingsOverlay.style.display = "none";
+        });
+
+        /* =========================================================
+           THEME SYSTEM + BACKGROUND MODE
+           ========================================================= */
+        const intensityMap = {
+            gamer: "C",
+            neon: "C",
+            terminal: "B",
+            glass: "B",
+            minimal: "A"
+        };
+
+        let currentBackgroundMode = "gamer";
+        let currentIntensity = intensityMap["gamer"];
+
+        function applyTheme(theme) {
+            document.body.setAttribute("data-theme", theme);
+            currentBackgroundMode = theme;
+            currentIntensity = intensityMap[theme] || "B";
+        }
+
+        themeSelect.addEventListener("change", function() {
+            applyTheme(themeSelect.value);
+        });
+
+        applyTheme("gamer");
+
+        /* =========================================================
+           PANIC KEYBIND
+           ========================================================= */
+        panicToggle.addEventListener("change", function() {
+            panicEnabled = panicToggle.checked;
+        });
+
+        document.addEventListener("keydown", function(e) {
+            if (panicEnabled && e.ctrlKey && e.key === "0") {
+                window.location.href = "https://classroom.google.com";
+            }
+        });
+
+        /* =========================================================
+           MIGRATE LOADER TO NEW TAB (PATCHED)
+           ========================================================= */
+        openLoaderTabBtn.addEventListener("click", function() {
+            const html = document.documentElement.outerHTML;
+            const newTab = window.open("about:blank");
+            if (!newTab) return;
+            newTab.document.open();
+            newTab.document.write(html);
+            newTab.document.close();
+        });
+
+        /* =========================================================
+           LIBRARY UI
+           ========================================================= */
+        libraryBtn.addEventListener("click", () => {
+            libraryOverlay.style.display = "flex";
+            renderLibrary();
+        });
+
+        closeLibrary.addEventListener("click", () => {
+            libraryOverlay.style.display = "none";
+        });
+
+        /* =========================================================
+           LIBRARY HELPERS
+           ========================================================= */
+        function ensureLibraryEmptyState() {
+            if (gameLibrary.length === 0) {
+                libraryEmpty.style.display = "block";
+            } else {
+                libraryEmpty.style.display = "none";
+            }
+        }
+
+        function renderLibrary() {
+            libraryList.innerHTML = "";
+            ensureLibraryEmptyState();
+            if (gameLibrary.length === 0) {
+                libraryList.appendChild(libraryEmpty);
+                return;
+            }
+
+            gameLibrary.forEach(game => {
+                const item = document.createElement("div");
+                item.className = "library-item";
+
+                const main = document.createElement("div");
+                main.className = "library-main";
+
+                const icon = document.createElement("div");
+                icon.className = "library-icon";
+                icon.textContent = game.icon || (game.type === "zip" ? "🎮" : "📄");
+
+                const text = document.createElement("div");
+                text.className = "library-text";
+
+                const name = document.createElement("div");
+                name.className = "library-name";
+                name.textContent = game.name;
+
+                const meta = document.createElement("div");
+                meta.className = "library-meta";
+                const typeSpan = document.createElement("span");
+                typeSpan.textContent = game.type === "zip" ? "ZIP Game" : "HTML Game";
+                const themeSpan = document.createElement("span");
+                themeSpan.textContent = "Theme: " + (game.theme || "default");
+                meta.appendChild(typeSpan);
+                meta.appendChild(themeSpan);
+
+                text.appendChild(name);
+                text.appendChild(meta);
+
+                main.appendChild(icon);
+                main.appendChild(text);
+
+                const actionsRow = document.createElement("div");
+                actionsRow.className = "library-actions-row";
+
+                const playBtn = document.createElement("button");
+                playBtn.className = "btn secondary";
+                playBtn.textContent = "Play";
+                playBtn.addEventListener("click", () => playFromLibrary(game.id));
+
+                const renameBtn = document.createElement("button");
+                renameBtn.className = "btn secondary";
+                renameBtn.textContent = "Rename";
+                renameBtn.addEventListener("click", () => renameLibraryGame(game.id));
+
+                const emojiBtn = document.createElement("button");
+                emojiBtn.className = "btn secondary";
+                emojiBtn.textContent = "Emoji";
+                emojiBtn.addEventListener("click", () => editLibraryEmoji(game.id));
+
+                const deleteBtn = document.createElement("button");
+                deleteBtn.className = "btn secondary";
+                deleteBtn.textContent = "Delete";
+                deleteBtn.addEventListener("click", () => deleteLibraryGame(game.id));
+
+                actionsRow.appendChild(playBtn);
+                actionsRow.appendChild(renameBtn);
+                actionsRow.appendChild(emojiBtn);
+                actionsRow.appendChild(deleteBtn);
+
+                item.appendChild(main);
+                item.appendChild(actionsRow);
+
+                libraryList.appendChild(item);
+            });
+        }
+
+        /* =========================================================
+           LIBRARY OPERATIONS
+           ========================================================= */
+        function generateId() {
+            return "g_" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+        }
+
+        function promptAddToLibrary(info) {
+            const defaultName = info.filename || "Untitled Game";
+            const name = prompt("Add this game to your library? Enter a name:", defaultName);
+            if (!name) return;
+
+            const icon = prompt(
+                "Optional: Enter an emoji icon for this game (or leave blank):",
+                info.type === "zip" ? "🎮" : "📄"
+            ) || (info.type === "zip" ? "🎮" : "📄");
+            const theme = document.body.getAttribute("data-theme") || "gamer";
+
+            if (info.type === "html") {
+                const htmlDataUrl = "data:text/html;base64," + btoa(unescape(encodeURIComponent(info.rawHtml)));
+                gameLibrary.push({
+                    id: generateId(),
+                    name,
+                    icon,
+                    theme,
+                    type: "html",
+                    htmlData: htmlDataUrl
+                });
+            } else if (info.type === "zip" && info.zipData) {
+                gameLibrary.push({
+                    id: generateId(),
+                    name,
+                    icon,
+                    theme,
+                    type: "zip",
+                    zipData: info.zipData
+                });
+            }
+
+            if (libraryOverlay.style.display === "flex") {
+                renderLibrary();
+            }
+        }
+
+        function editLibraryEmoji(id) {
+            const game = gameLibrary.find(g => g.id === id);
+            if (!game) return;
+
+            const currentEmoji = game.icon || (game.type === "zip" ? "🎮" : "📄");
+            const newEmoji = prompt("Enter a new emoji for this game:", currentEmoji);
+            if (!newEmoji) return;
+
+            game.icon = newEmoji.trim();
+            renderLibrary();
+        }
+
+        async function playFromLibrary(id) {
+            const game = gameLibrary.find(g => g.id === id);
+            if (!game) return;
+
+            applyTheme(game.theme || "gamer");
+            themeSelect.value = game.theme || "gamer";
+
+            if (game.type === "html" && game.htmlData) {
+                const res = await fetch(game.htmlData);
+                const text = await res.text();
+                loadGame(text, true);
+            } else if (game.type === "zip" && game.zipData) {
+                showZipProgress();
+                startLoadTimeout();
+                try {
+                    const blobUrl = await loadZipGameFromFile(null, true, game.zipData);
+                    frame.src = blobUrl;
+                    overlay.style.display = "none";
+                    fullscreenBtn.disabled = false;
+                    launchTabBtn.disabled = false;
+                } catch (err) {
+                    console.error(err);
+                    alert("Failed to load ZIP game from library.");
+                    hideLoader();
+                }
+            }
+        }
+
+        function renameLibraryGame(id) {
+            const game = gameLibrary.find(g => g.id === id);
+            if (!game) return;
+            const newName = prompt("Enter a new name for this game:", game.name);
+            if (!newName) return;
+            game.name = newName;
+            renderLibrary();
+        }
+
+        function deleteLibraryGame(id) {
+            if (!confirm("Remove this game from your library?")) return;
+            gameLibrary = gameLibrary.filter(g => g.id !== id);
+            renderLibrary();
+        }
+
+        /* =========================================================
+           EXPORT / IMPORT .GAMEPACK
+           ========================================================= */
+        exportPackBtn.addEventListener("click", () => {
+            if (gameLibrary.length === 0) {
+                alert("Your library is empty. Load and add games before exporting.");
+                return;
+            }
+            const pack = {
+                version: 1,
+                games: gameLibrary
+            };
+            const json = JSON.stringify(pack);
+            const blob = new Blob([json], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "game-loader-library.gamepack";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+
+        importPackBtn.addEventListener("click", () => {
+            importPackInput.value = "";
+            importPackInput.click();
+        });
+
+        importPackInput.addEventListener("change", () => {
+            const file = importPackInput.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = e => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (!data || typeof data !== "object" || !Array.isArray(data.games)) {
+                        alert("Invalid .gamepack file.");
+                        return;
+                    }
+                    gameLibrary = data.games;
+                    renderLibrary();
+                    alert("Library imported successfully.");
+                } catch (err) {
+                    console.error(err);
+                    alert("Failed to import .gamepack file.");
+                }
+            };
+            reader.readAsText(file);
+        });
+
+        resetLibraryBtn.addEventListener("click", () => {
+            if (!confirm("Reset your library? This only clears the in-memory list (export first if needed).")) return;
+            gameLibrary = [];
+            renderLibrary();
+        });
+
+        /* =========================================================
+           MULTI-THEME BACKGROUND ENGINE (ONE LOOP)
+           ========================================================= */
+        const shaderCanvas = document.getElementById("bgShaderCanvas");
+        const shaderCtx = shaderCanvas.getContext("2d");
+        let shaderWidth = 320;
+        let shaderHeight = 180;
+        let shaderLastTime = 0;
+        let reducedMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        let pageVisible = true;
+
+        function resizeShaderCanvas() {
+            shaderWidth = Math.floor(window.innerWidth / 6);
+            shaderHeight = Math.floor(window.innerHeight / 6);
+            if (shaderWidth < 160) shaderWidth = 160;
+            if (shaderHeight < 90) shaderHeight = 90;
+            shaderCanvas.width = shaderWidth;
+            shaderCanvas.height = shaderHeight;
+        }
+
+        window.addEventListener("resize", resizeShaderCanvas);
+        resizeShaderCanvas();
+        /* =========================================================
+           GAMER RGB BLOBS (BOLD)
+           ========================================================= */
+        const gamerBlobs = [
+            { x: 0.2, y: 0.3, r: 0.45, color: [255, 75, 129] },
+            { x: 0.8, y: 0.4, r: 0.55, color: [125, 249, 255] },
+            { x: 0.5, y: 0.8, r: 0.6, color: [124, 255, 107] }
+        ];
+
+        function drawGamerShader(intensity, time, dt) {
+            shaderCtx.fillStyle = "#050509";
+            shaderCtx.fillRect(0, 0, shaderWidth, shaderHeight);
+
+            gamerBlobs.forEach((blob, index) => {
+                const baseSpeed = 0.05 + index * 0.02;
+                const speedMultiplier = intensity === "C" ? 1.4 : intensity === "B" ? 1.0 : 0.6;
+                const speed = baseSpeed * speedMultiplier;
+
+                blob.x += Math.sin(time * 0.0001 + index) * speed * dt;
+                blob.y += Math.cos(time * 0.00012 + index * 2) * speed * dt;
+
+                if (blob.x < -0.2) blob.x = 1.2;
+                if (blob.x > 1.2) blob.x = -0.2;
+                if (blob.y < -0.2) blob.y = 1.2;
+                if (blob.y > 1.2) blob.y = -0.2;
+
+                const cx = blob.x * shaderWidth;
+                const cy = blob.y * shaderHeight;
+                const radius = blob.r * Math.max(shaderWidth, shaderHeight) * (intensity === "C" ? 1.1 : 0.9);
+
+                const grad = shaderCtx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+                const [r, g, b] = blob.color;
+                const alphaCore = intensity === "C" ? 1.0 : intensity === "B" ? 0.8 : 0.6;
+                const alphaMid = intensity === "C" ? 0.5 : 0.35;
+                grad.addColorStop(0, `rgba(${r},${g},${b},${alphaCore})`);
+                grad.addColorStop(0.4, `rgba(${r},${g},${b},${alphaMid})`);
+                grad.addColorStop(1, "rgba(0,0,0,0)");
+
+                shaderCtx.globalCompositeOperation = "screen";
+                shaderCtx.fillStyle = grad;
+                shaderCtx.fillRect(0, 0, shaderWidth, shaderHeight);
+                shaderCtx.globalCompositeOperation = "source-over";
+            });
+        }
+
+        /* =========================================================
+           NEON PULSE (BOLD)
+           ========================================================= */
+        const neonRings = [
+            { x: 0.3, y: 0.4, baseR: 0.25, color: [255, 75, 255] },
+            { x: 0.7, y: 0.6, baseR: 0.3, color: [125, 249, 255] }
+        ];
+
+        function drawNeonPulse(intensity, time, dt) {
+            shaderCtx.fillStyle = "#050010";
+            shaderCtx.fillRect(0, 0, shaderWidth, shaderHeight);
+
+            const speed = intensity === "C" ? 1.5 : intensity === "B" ? 1.0 : 0.6;
+            const pulse = (Math.sin(time * 0.002 * speed) + 1) / 2;
+
+            neonRings.forEach((ring, index) => {
+                const cx = ring.x * shaderWidth;
+                const cy = ring.y * shaderHeight;
+                const maxRadius = ring.baseR * Math.max(shaderWidth, shaderHeight) * (1.0 + pulse * 0.6);
+                const innerRadius = maxRadius * 0.3;
+
+                const [r, g, b] = ring.color;
+                const glowAlpha = intensity === "C" ? 0.9 : 0.6;
+
+                const grad = shaderCtx.createRadialGradient(cx, cy, innerRadius, cx, cy, maxRadius);
+                grad.addColorStop(0, `rgba(${r},${g},${b},0)`);
+                grad.addColorStop(0.4, `rgba(${r},${g},${b},${glowAlpha})`);
+                grad.addColorStop(1, "rgba(0,0,0,0)");
+
+                shaderCtx.globalCompositeOperation = "screen";
+                shaderCtx.fillStyle = grad;
+                shaderCtx.fillRect(0, 0, shaderWidth, shaderHeight);
+                shaderCtx.globalCompositeOperation = "source-over";
+            });
+
+            if (intensity === "C") {
+                shaderCtx.fillStyle = "rgba(255,255,255,0.03)";
+                shaderCtx.fillRect(0, 0, shaderWidth, shaderHeight);
+            }
+        }
+
+        /* =========================================================
+           TERMINAL MATRIX RAIN (BALANCED)
+           ========================================================= */
+        const matrixColumns = [];
+        let matrixInitialized = false;
+        const matrixChars = "01";
+
+        function initMatrix() {
+            matrixColumns.length = 0;
+            const columnCount = Math.floor(shaderWidth / 8);
+            for (let i = 0; i < columnCount; i++) {
+                matrixColumns.push({
+                    x: i * 8,
+                    y: Math.random() * shaderHeight,
+                    speed: 40 + Math.random() * 60
+                });
+            }
+            matrixInitialized = true;
+        }
+
+        function drawMatrixRain(intensity, time, dt) {
+            if (!matrixInitialized) initMatrix();
+
+            const fadeAlpha = intensity === "C" ? 0.15 : intensity === "B" ? 0.2 : 0.25;
+            shaderCtx.fillStyle = `rgba(0,0,0,${fadeAlpha})`;
+            shaderCtx.fillRect(0, 0, shaderWidth, shaderHeight);
+
+            shaderCtx.font = "10px monospace";
+            shaderCtx.textBaseline = "top";
+
+            const speedMultiplier = intensity === "C" ? 1.4 : intensity === "B" ? 1.0 : 0.7;
+
+            matrixColumns.forEach(col => {
+                col.y += col.speed * speedMultiplier * dt;
+                if (col.y > shaderHeight + 20) {
+                    col.y = -20;
+                    col.speed = 40 + Math.random() * 60;
+                }
+
+                const char = matrixChars[Math.floor(Math.random() * matrixChars.length)];
+                const brightHead = col.y > shaderHeight * 0.2 && col.y < shaderHeight * 0.8;
+
+                shaderCtx.fillStyle = brightHead ? "rgba(180,255,180,0.9)" : "rgba(80,180,80,0.7)";
+                shaderCtx.fillText(char, col.x, col.y);
+            });
+        }
+
+        /* =========================================================
+           GLASS FOG (BALANCED)
+           ========================================================= */
+        const glassBlobs = [
+            { x: 0.2, y: 0.3, r: 0.5, phase: 0 },
+            { x: 0.7, y: 0.5, r: 0.6, phase: 1.3 },
+            { x: 0.5, y: 0.8, r: 0.7, phase: 2.1 }
+        ];
+
+        function drawGlassFog(intensity, time, dt) {
+            shaderCtx.fillStyle = "#0b1020";
+            shaderCtx.fillRect(0, 0, shaderWidth, shaderHeight);
+
+            const speed = intensity === "C" ? 1.0 : 0.7;
+            const alphaBase = intensity === "C" ? 0.5 : 0.35;
+
+            glassBlobs.forEach((blob, index) => {
+                const t = time * 0.0001 * speed + blob.phase;
+                const cx = (0.5 + Math.sin(t + index) * 0.25) * shaderWidth;
+                const cy = (0.5 + Math.cos(t * 1.2 + index * 0.7) * 0.25) * shaderHeight;
+                const radius = blob.r * Math.max(shaderWidth, shaderHeight);
+
+                const grad = shaderCtx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+                grad.addColorStop(0, `rgba(220,230,255,${alphaBase})`);
+                grad.addColorStop(0.5, "rgba(180,200,255,0.25)");
+                grad.addColorStop(1, "rgba(0,0,0,0)");
+
+                shaderCtx.globalCompositeOperation = "screen";
+                shaderCtx.fillStyle = grad;
+                shaderCtx.fillRect(0, 0, shaderWidth, shaderHeight);
+                shaderCtx.globalCompositeOperation = "source-over";
+            });
+        }
+
+        /* =========================================================
+           MINIMAL BREATHING GRADIENT (SUBTLE)
+           ========================================================= */
+        function drawMinimalFade(intensity, time, dt) {
+            const t = time * 0.00015;
+            const mix = (Math.sin(t) + 1) / 2;
+
+            const c1 = [243, 243, 246];
+            const c2 = [220, 230, 245];
+
+            const r = Math.round(c1[0] * (1 - mix) + c2[0] * mix);
+            const g = Math.round(c1[1] * (1 - mix) + c2[1] * mix);
+            const b = Math.round(c1[2] * (1 - mix) + c2[2] * mix);
+
+            const grad = shaderCtx.createLinearGradient(0, 0, shaderWidth, shaderHeight);
+            grad.addColorStop(0, `rgba(${r},${g},${b},1)`);
+            grad.addColorStop(1, `rgba(${r - 10},${g - 10},${b - 10},1)`);
+
+            shaderCtx.fillStyle = grad;
+            shaderCtx.fillRect(0, 0, shaderWidth, shaderHeight);
+        }
+
+        /* =========================================================
+           MAIN ANIMATION LOOP
+           ========================================================= */
+        function animationLoop(timestamp) {
+            if (!pageVisible || reducedMotion) {
+                shaderCtx.clearRect(0, 0, shaderWidth, shaderHeight);
+                requestAnimationFrame(animationLoop);
+                return;
+            }
+
+            const time = timestamp || performance.now();
+            const dt = (time - shaderLastTime) / 1000 || 0;
+            shaderLastTime = time;
+
+            switch (currentBackgroundMode) {
+                case "gamer":
+                    drawGamerShader(currentIntensity, time, dt);
+                    break;
+                case "neon":
+                    drawNeonPulse(currentIntensity, time, dt);
+                    break;
+                case "terminal":
+                    drawMatrixRain(currentIntensity, time, dt);
+                    break;
+                case "glass":
+                    drawGlassFog(currentIntensity, time, dt);
+                    break;
+                case "minimal":
+                    drawMinimalFade(currentIntensity, time, dt);
+                    break;
+                default:
+                    shaderCtx.clearRect(0, 0, shaderWidth, shaderHeight);
+                    break;
+            }
+
+            requestAnimationFrame(animationLoop);
+        }
+
+        document.addEventListener("visibilitychange", () => {
+            pageVisible = !document.hidden;
+        });
+
+        if (window.matchMedia) {
+            window.matchMedia("(prefers-reduced-motion: reduce)").addEventListener("change", e => {
+                reducedMotion = e.matches;
+            });
+        }
+
+        requestAnimationFrame(animationLoop);
+
+        /* =========================================================
+           GHOST SIGNATURE FUNCTION
+           ========================================================= */
+        function __madocSignature() {
+            return "Game Loader Pro — Original Creator: Madoc Treasure";
+        }
+    </script>
+</body>
+</html>
